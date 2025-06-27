@@ -3,11 +3,14 @@ package jp.co.sony.csl.dcoes.apis.common.util.vertx;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Closeable;
-import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import io.vertx.core.Handler;
 import io.vertx.core.impl.VertxImpl;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import io.vertx.core.shareddata.AsyncMap;
+import io.vertx.core.eventbus.MessageConsumer;
+import io.vertx.core.Vertx;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import io.vertx.core.shareddata.AsyncMap;
 import jp.co.sony.csl.dcoes.apis.common.ServiceAddress;
 import jp.co.sony.csl.dcoes.apis.common.util.JulUtil;
@@ -41,7 +44,7 @@ public abstract class AbstractStarter extends AbstractVerticle {
 	 * @param startFuture {@inheritDoc}
 	 * @throws Exception {@inheritDoc}
 	 */
-	@Override public void start(Future<Void> startFuture) throws Exception {
+	@Override public void start(Promise<Void> startPromise) throws Exception {
 		init_(resInit -> {
 			if (resInit.succeeded()) {
 				startShutdownAllService_(resShutdownAll -> {
@@ -58,29 +61,29 @@ public abstract class AbstractStarter extends AbstractVerticle {
 														if (log.isInfoEnabled()) log.info("communityId  : " + VertxConfig.communityId());
 														if (log.isInfoEnabled()) log.info("clusterId    : " + VertxConfig.clusterId());
 														if (log.isTraceEnabled()) log.trace("started : " + deploymentID());
-														startFuture.complete();
+														startPromise.complete();
 													} else {
-														startFuture.fail(resDoStart.cause());
+														startPromise.fail(resDoStart.cause());
 													}
 												});
 											} else {
-												startFuture.fail(resWatchdogRestarting.cause());
+												startPromise.fail(resWatchdogRestarting.cause());
 											}
 										});
 									} else {
-										startFuture.fail(resMulticastLogHandlerLevel.cause());
+										startPromise.fail(resMulticastLogHandlerLevel.cause());
 									}
 								});
 							} else {
-								startFuture.fail(resShutdownLocal.cause());
+								startPromise.fail(resShutdownLocal.cause());
 							}
 						});
 					} else {
-						startFuture.fail(resShutdownAll.cause());
+						startPromise.fail(resShutdownAll.cause());
 					}
 				});
 			} else {
-				startFuture.fail(resInit.cause());
+				startPromise.fail(resInit.cause());
 			}
 		});
 	}
@@ -95,7 +98,7 @@ public abstract class AbstractStarter extends AbstractVerticle {
 	 * @param stopFuture {@inheritDoc}
 	 * @throws Exception {@inheritDoc}
 	 */
-	@Override public void stop(Future<Void> stopFuture) throws Exception {
+	@Override public void stop(Promise<Void> stopPromise) throws Exception {
 		doStop(resDoStop -> {
 			if (resDoStop.succeeded()) {
 				// nop
@@ -103,7 +106,7 @@ public abstract class AbstractStarter extends AbstractVerticle {
 				log.error(resDoStop.cause());
 			}
 			if (log.isTraceEnabled()) log.trace("stopped : " + deploymentID());
-			stopFuture.complete();
+			stopPromise.complete();
 		});
 	}
 
@@ -174,28 +177,28 @@ public abstract class AbstractStarter extends AbstractVerticle {
 						if (existingValue == null) {
 							// Could be placed (there is no entry) → It was the initial cluster member → Success
 							// 置けた ( エントリがなかった ) → 最初のクラスタメンバだった → 成功
-							completionHandler.handle(Future.succeededFuture());
+							completionHandler.handle(Promise.<Void>succeededPromise().future());
 						} else {
 							// Could not be placed (entry already exists)
 							// 置けなかった ( もうエントリがあった )
 							if (existingValue.equals(APIS_VERSION)) {
 								// → Same as own value (version) → Success
 								// → 自分の値 ( バージョン ) と同じ → 成功
-								completionHandler.handle(Future.succeededFuture());
+								completionHandler.handle(Promise.<Void>succeededPromise().future());
 							} else {
 								// → Different than own value (version) → Fail
 								// → 自分の値 ( バージョン ) と違う → 失敗 
-								completionHandler.handle(Future.failedFuture("my APIS_VERSION : " + APIS_VERSION + " ; is different from cluster's : " + existingValue));
+								completionHandler.handle(Promise.<Void>failedPromise("my APIS_VERSION : " + APIS_VERSION + " ; is different from cluster's : " + existingValue));
 							}
 						}
 					} else {
 						// The process fails in the first place → Fail
 						// そもそも処理が失敗した → 失敗
-						completionHandler.handle(Future.failedFuture(resPutIfAbsent.cause()));
+						completionHandler.handle(Promise.<Void>failedPromise(resPutIfAbsent.cause()).future());
 					}
 				});
 			} else {
-				completionHandler.handle(Future.failedFuture(resMap.cause()));
+				completionHandler.handle(Promise.<Void>failedPromise(resMap.cause()).future());
 			}
 		});
 	}
@@ -337,7 +340,7 @@ public abstract class AbstractStarter extends AbstractVerticle {
 	 */
 	protected void doStop(Handler<AsyncResult<Void>> completionHandler) {
 		// default implementation
-		completionHandler.handle(Future.succeededFuture());
+		completionHandler.handle(Promise.<Void>succeededPromise().future());
 	}
 	/**
 	 * This is an empty emthod to implement each APIS program's own particular stop process.
@@ -351,7 +354,7 @@ public abstract class AbstractStarter extends AbstractVerticle {
 	 */
 	protected void doShutdown(Handler<AsyncResult<Void>> completionHandler) {
 		// default implementation
-		completionHandler.handle(Future.succeededFuture());
+		completionHandler.handle(Promise.<Void>succeededPromise().future());
 	}
 	/**
 	 * This is an empty method called in response to an uncaught exception. 
