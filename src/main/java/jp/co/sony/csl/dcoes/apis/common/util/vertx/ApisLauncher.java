@@ -19,8 +19,11 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
+import org.slf4j.MDC;
 
 import jp.co.sony.csl.dcoes.apis.common.util.EncryptionUtil;
+import jp.co.sony.csl.dcoes.apis.common.util.vertx.VertxConfig;
+
 
 /**
  * This is the common startup class for APIS programs.
@@ -57,6 +60,7 @@ public class ApisLauncher extends Launcher {
 	 * @param args the user command line arguments.
 	 */
 	public static void main(String[] args) {
+		MDC.put("programId", VertxConfig.programId());
 		new ApisLauncher().dispatch(args);
 	}
 	/**
