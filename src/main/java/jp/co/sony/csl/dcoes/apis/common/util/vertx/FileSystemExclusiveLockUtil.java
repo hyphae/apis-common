@@ -29,7 +29,7 @@ import jp.co.sony.csl.dcoes.apis.common.util.StringUtil;
  * @author OES Project
  */
 public class FileSystemExclusiveLockUtil {
-	private static final Logger log = LoggerFactory.getLogger(FileSystemExclusiveLockUtil.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(FileSystemExclusiveLockUtil.class);
 
 	private static final JsonObjectUtil.DefaultString DEFAULT_LOCK_FILE_FORMAT = new JsonObjectUtil.DefaultString(StringUtil.TMPDIR + "/.apis.%s.lock");
 
@@ -39,7 +39,7 @@ public class FileSystemExclusiveLockUtil {
 	 * 本クラスに関するプロセス内の排他制御オブジェクト.
 	 * {@link FileLock} はスレッド競合するので排他ロックを咬ませる.
 	 */
-	private static LocalExclusiveLock exclusiveLock_ = new LocalExclusiveLock(FileSystemExclusiveLockUtil.class.getName());
+	private static LocalExclusiveLock EXCLUSIVE_LOCK = new LocalExclusiveLock(FileSystemExclusiveLockUtil.class.getName());
 	/**
 	 * Gets exclusive control lock within process related to this class.
 	 * Receives the lock object using completionHandler's {@link AsyncResult#result()}.
@@ -53,7 +53,7 @@ public class FileSystemExclusiveLockUtil {
 	 * @param completionHandler the completion handler
 	 */
 	public static void acquireExclusiveLock(Vertx vertx, Handler<AsyncResult<LocalExclusiveLock.Lock>> completionHandler) {
-		exclusiveLock_.acquire(vertx, completionHandler);
+		EXCLUSIVE_LOCK.acquire(vertx, completionHandler);
 	}
 	/**
 	 * Resets exclusive control lock within process related to this class.
@@ -64,7 +64,7 @@ public class FileSystemExclusiveLockUtil {
 	 * @param vertx vertx インスタンス
 	 */
 	public static void resetExclusiveLock(Vertx vertx) {
-		exclusiveLock_.reset(vertx);
+		EXCLUSIVE_LOCK.reset(vertx);
 	}
 
 	private static Map<String, FileChannel> channels_ = new ConcurrentHashMap<>();
@@ -104,7 +104,7 @@ public class FileSystemExclusiveLockUtil {
 						completionHandler.handle(resAcquireLock);
 					});
 				} else {
-					log.error(resExclusiveLock);
+					LOGGER.error(resExclusiveLock);
 					completionHandler.handle(Future.failedFuture(resExclusiveLock.cause()));
 				}
 			});
@@ -142,7 +142,7 @@ public class FileSystemExclusiveLockUtil {
 						completionHandler.handle(resReleaseLock);
 					});
 				} else {
-					log.error(resExclusiveLock);
+					LOGGER.error(resExclusiveLock);
 					completionHandler.handle(Future.failedFuture(resExclusiveLock.cause()));
 				}
 			});
@@ -172,7 +172,7 @@ public class FileSystemExclusiveLockUtil {
 						completionHandler.handle(resCheckLock);
 					});
 				} else {
-					log.error(resExclusiveLock);
+					LOGGER.error(resExclusiveLock);
 					completionHandler.handle(Future.failedFuture(resExclusiveLock.cause()));
 				}
 			});
@@ -199,7 +199,7 @@ public class FileSystemExclusiveLockUtil {
 					completionHandler.handle(resReetLock);
 				});
 			} else {
-				log.error(resExclusiveLock);
+				LOGGER.error(resExclusiveLock);
 				completionHandler.handle(Future.failedFuture(resExclusiveLock.cause()));
 			}
 		});
@@ -233,10 +233,10 @@ public class FileSystemExclusiveLockUtil {
 		if (locks_.get(name) != null) {
 			String msg = "already locked for name : " + name;
 			if (allowAlreadyLocked) {
-				if (log.isDebugEnabled()) log.debug(msg);
+				if (LOGGER.isDebugEnabled()) LOGGER.debug(msg);
 				completionHandler.handle(Future.succeededFuture(Boolean.TRUE));
 			} else {
-				if (log.isWarnEnabled()) log.warn(msg);
+				if (LOGGER.isWarnEnabled()) LOGGER.warn(msg);
 				completionHandler.handle(Future.succeededFuture(Boolean.FALSE));
 			}
 		} else {
@@ -247,16 +247,16 @@ public class FileSystemExclusiveLockUtil {
 					try {
 						lock = channel.tryLock();
 					} catch (Exception e) {
-						log.error(e);
+						LOGGER.error(e);
 						completionHandler.handle(Future.failedFuture(e));
 						return;
 					}
 					if (lock != null) {
-						if (log.isDebugEnabled()) log.debug("lock acquired for name : " + name);
+						if (LOGGER.isDebugEnabled()) LOGGER.debug("lock acquired for name : " + name);
 						locks_.put(name, lock);
 						completionHandler.handle(Future.succeededFuture(Boolean.TRUE));
 					} else {
-						if (log.isDebugEnabled()) log.debug("lock failed for name : " + name);
+						if (LOGGER.isDebugEnabled()) LOGGER.debug("lock failed for name : " + name);
 						completionHandler.handle(Future.succeededFuture(Boolean.FALSE));
 					}
 				} else {
@@ -289,7 +289,7 @@ public class FileSystemExclusiveLockUtil {
 					try {
 						newChannel = FileChannel.open(path, StandardOpenOption.WRITE, StandardOpenOption.SPARSE);
 					} catch (Exception e) {
-						log.error(e);
+						LOGGER.error(e);
 						completionHandler.handle(Future.failedFuture(e));
 						return;
 					}
@@ -329,12 +329,12 @@ public class FileSystemExclusiveLockUtil {
 				} else {
 					// Does not exist
 					// ない
-					if (log.isInfoEnabled()) log.info("creating lock file : " + path);
+					if (LOGGER.isInfoEnabled()) LOGGER.info("creating lock file : " + path);
 					vertx.fileSystem().createFile(path, resCreate -> {
 						if (resCreate.succeeded()) {
 							// → Created
 							// → 作れた
-							if (log.isInfoEnabled()) log.info("chmoding lock file : " + path);
+							if (LOGGER.isInfoEnabled()) LOGGER.info("chmoding lock file : " + path);
 							vertx.fileSystem().chmod(path, "rw-rw-rw-", resChmod -> {
 								// → Changes permissions because other processes open the file.
 								// → 他のプロセスも開くのでパーミッションを変えておく
@@ -343,7 +343,7 @@ public class FileSystemExclusiveLockUtil {
 									// → 成功
 									completionHandler.handle(Future.succeededFuture(Paths.get(path)));
 								} else {
-									log.error(resChmod.cause());
+									LOGGER.error(resChmod.cause());
 									completionHandler.handle(Future.failedFuture(resChmod.cause()));
 								}
 							});
@@ -359,11 +359,11 @@ public class FileSystemExclusiveLockUtil {
 									} else {
 										// → File does not exist after all → Error
 										// → やっぱりなかった → エラー
-										log.error(resCreate.cause());
+										LOGGER.error(resCreate.cause());
 										completionHandler.handle(Future.failedFuture(resCreate.cause()));
 									}
 								} else {
-									log.error(resExistsAgain.cause());
+									LOGGER.error(resExistsAgain.cause());
 									completionHandler.handle(Future.failedFuture(resExistsAgain.cause()));
 								}
 							});
@@ -371,7 +371,7 @@ public class FileSystemExclusiveLockUtil {
 					});
 				}
 			} else {
-				log.error(resExists.cause());
+				LOGGER.error(resExists.cause());
 				completionHandler.handle(Future.failedFuture(resExists.cause()));
 			}
 		});
@@ -404,34 +404,34 @@ public class FileSystemExclusiveLockUtil {
 				lock.release();
 			} catch (Exception e) {
 				locks_.put(name, lock);
-				log.error(e);
+				LOGGER.error(e);
 				completionHandler.handle(Future.failedFuture(e));
 				return;
 			}
-			if (log.isDebugEnabled()) log.debug("lock released for name : " + name);
+			if (LOGGER.isDebugEnabled()) LOGGER.debug("lock released for name : " + name);
 			FileChannel channel = channels_.remove(name);
 			if (channel != null) {
 				try {
 					channel.close();
 				} catch (Exception e) {
 					channels_.put(name, channel);
-					log.error(e);
+					LOGGER.error(e);
 					completionHandler.handle(Future.failedFuture(e));
 					return;
 				}
 				completionHandler.handle(Future.succeededFuture(Boolean.TRUE));
 			} else {
 				String msg = "no channel found for name : " + name;
-				log.error(msg);
+				LOGGER.error(msg);
 				completionHandler.handle(Future.failedFuture(msg));
 			}
 		} else {
 			String msg = "no lock found for name : " + name;
 			if (allowNotLocked) {
-				if (log.isDebugEnabled()) log.debug(msg);
+				if (LOGGER.isDebugEnabled()) LOGGER.debug(msg);
 				completionHandler.handle(Future.succeededFuture(Boolean.TRUE));
 			} else {
-				if (log.isWarnEnabled()) log.warn(msg);
+				if (LOGGER.isWarnEnabled()) LOGGER.warn(msg);
 				completionHandler.handle(Future.succeededFuture(Boolean.FALSE));
 			}
 		}
@@ -464,7 +464,7 @@ public class FileSystemExclusiveLockUtil {
 	 * @param completionHandler the completion handler
 	 */
 	private static void resetLocks_(Vertx vertx, Handler<AsyncResult<Void>> completionHandler) {
-		if (log.isDebugEnabled()) log.debug("resetting locks...");
+		if (LOGGER.isDebugEnabled()) LOGGER.debug("resetting locks...");
 		@SuppressWarnings("rawtypes") List<Future> releaseFutures = new ArrayList<>();
 		for (String aName : locks_.keySet()) {
 			Future<Boolean> aFuture = Future.future();
