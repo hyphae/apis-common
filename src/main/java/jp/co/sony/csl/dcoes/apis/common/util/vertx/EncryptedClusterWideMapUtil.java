@@ -29,7 +29,7 @@ import jp.co.sony.csl.dcoes.apis.common.util.EncryptionUtil;
  * @author OES Project
  */
 public class EncryptedClusterWideMapUtil {
-	private static final Logger log = LoggerFactory.getLogger(EncryptedClusterWideMapUtil.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(EncryptedClusterWideMapUtil.class);
 
 	private static final char CLASS_VALUE_DELIMITER = ':';
 	private static final String CLASS_CODE_STRING = "s";
@@ -39,7 +39,7 @@ public class EncryptedClusterWideMapUtil {
 	private static boolean SECURE_CLUSTER = VertxConfig.securityEnabled();
 	static {
 		if (SECURE_CLUSTER) {
-			if (log.isInfoEnabled()) log.info("ClusterWideMap will be encrypted");
+			if (LOGGER.isInfoEnabled()) LOGGER.info("ClusterWideMap will be encrypted");
 		}
 	}
 
@@ -90,7 +90,7 @@ public class EncryptedClusterWideMapUtil {
 					try {
 						result = new EncryptedAsyncMap<K, V>(resMap.result(), seed);
 					} catch (Exception e) {
-						log.error(e);
+						LOGGER.error(e);
 						resultHandler.handle(Future.failedFuture(e));
 						return;
 					}
@@ -161,7 +161,7 @@ public class EncryptedClusterWideMapUtil {
 				try {
 					decrypted = EncryptionUtil.decrypt(value, cipher_, seed_);
 				} catch (Exception e) {
-					log.error(e);
+					LOGGER.error(e);
 					resultHandler.handle(Future.failedFuture(e));
 					return;
 				}
@@ -229,7 +229,7 @@ public class EncryptedClusterWideMapUtil {
 				try {
 					encrypted = EncryptionUtil.encrypt(value, cipher_, seed_);
 				} catch (Exception e) {
-					log.error(e);
+					LOGGER.error(e);
 					resultHandler.handle(Future.failedFuture(e));
 					return;
 				}
