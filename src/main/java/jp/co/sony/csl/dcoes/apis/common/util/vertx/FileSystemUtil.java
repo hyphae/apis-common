@@ -14,7 +14,7 @@ import org.slf4j.LoggerFactory;
  * @author OES Project
  */
 public class FileSystemUtil {
-	private static final Logger log = LoggerFactory.getLogger(FileSystemUtil.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(FileSystemUtil.class);
 
 	private FileSystemUtil() { }
 
@@ -57,11 +57,11 @@ public class FileSystemUtil {
 									} else {
 										// → File does not exist after all → Error
 										// → やっぱりなかった → エラー
-										log.error(resMkdirs.cause());
+										LOGGER.error(resMkdirs.cause());
 										completionHandler.handle(Future.failedFuture(resMkdirs.cause()));
 									}
 								} else {
-									log.error(resExistsAgain.cause());
+									LOGGER.error(resExistsAgain.cause());
 									completionHandler.handle(Future.failedFuture(resExistsAgain.cause()));
 								}
 							});
@@ -69,7 +69,7 @@ public class FileSystemUtil {
 					});
 				}
 			} else {
-				log.error(resExists.cause());
+				LOGGER.error(resExists.cause());
 				completionHandler.handle(Future.failedFuture(resExists.cause()));
 			}
 		});
