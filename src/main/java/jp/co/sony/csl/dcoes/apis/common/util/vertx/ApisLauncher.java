@@ -6,8 +6,8 @@ import io.vertx.core.VertxOptions;
 import io.vertx.core.file.impl.FileResolver;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import io.vertx.core.net.PemKeyCertOptions;
 
 import java.io.File;
@@ -35,7 +35,7 @@ import jp.co.sony.csl.dcoes.apis.common.util.vertx.VertxConfig;
  * @author OES Project
  */
 public class ApisLauncher extends Launcher {
-	private static final Logger log = LoggerFactory.getLogger(ApisLauncher.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(ApisLauncher.class);
 
 	/**
 	 * Sets suffix to key of entry encrypted in CONFIG.
@@ -153,7 +153,7 @@ public class ApisLauncher extends Launcher {
 		String tmpdir = System.getProperty("java.io.tmpdir", ".");
 		String name = System.getProperty("user.name", "unknown");
 		String base = tmpdir + File.separator + "vertx-cache." + name;
-		if (log.isDebugEnabled()) log.debug(FileResolver.CACHE_DIR_BASE_PROP_NAME + " : " + base);
+		if (LOGGER.isDebugEnabled()) LOGGER.debug(FileResolver.CACHE_DIR_BASE_PROP_NAME + " : " + base);
 		System.setProperty(FileResolver.CACHE_DIR_BASE_PROP_NAME, base);
 	}
 
@@ -253,11 +253,11 @@ public class ApisLauncher extends Launcher {
 	 */
 	private Object decrypt_(Object v, boolean needDecrypt) {
 		if (v instanceof String && needDecrypt) {
-			if (log.isDebugEnabled()) log.debug("decrypting string : " + v);
+			if (LOGGER.isDebugEnabled()) LOGGER.debug("decrypting string : " + v);
 			try {
 				return EncryptionUtil.decrypt((String) v);
 			} catch (Exception e) {
-				log.error(e);
+				LOGGER.error(e);
 				throw new RuntimeException("string decryption failed : " + v, e);
 			}
 		} else if (v instanceof JsonObject) {
@@ -286,17 +286,17 @@ public class ApisLauncher extends Launcher {
 			paths.filter(path -> !Files.isDirectory(path) && path.getFileName() != null && path.getFileName().toString().endsWith(SUFFIX_TO_DECRYPT)).forEach(path -> {
 				String encryptedFilename = path.getFileName().toString();
 				String decryptedFilename = encryptedFilename.substring(0, encryptedFilename.length() - SUFFIX_TO_DECRYPT.length());
-				if (log.isDebugEnabled()) log.debug("decrypting file : " + encryptedFilename);
+				if (LOGGER.isDebugEnabled()) LOGGER.debug("decrypting file : " + encryptedFilename);
 				try {
 					List<String> lines = Files.readAllLines(path);
 					String encrypted = String.join("", lines);
 					String decrypted = EncryptionUtil.decrypt(encrypted);
 					Path decryptedPath = Paths.get("", decryptedFilename);
 					Files.write(decryptedPath, decrypted.getBytes(StandardCharsets.UTF_8));
-					if (log.isDebugEnabled()) log.debug("file decrypted : " + decryptedFilename);
+					if (LOGGER.isDebugEnabled()) LOGGER.debug("file decrypted : " + decryptedFilename);
 					decryptedPaths_.add(decryptedPath);
 				} catch (Exception e) {
-					log.error(e);
+					LOGGER.error(e);
 					throw new RuntimeException("file decryption failed : " + encryptedFilename, e);
 				}
 			});
@@ -314,16 +314,16 @@ public class ApisLauncher extends Launcher {
 	 */
 	private void deleteDecryptedFiles_() {
 		for (Path decryptedPath : decryptedPaths_) {
-			if (log.isDebugEnabled()) log.debug("deleting file : " + decryptedPath);
+			if (LOGGER.isDebugEnabled()) LOGGER.debug("deleting file : " + decryptedPath);
 			try {
 				boolean deleted = Files.deleteIfExists(decryptedPath);
 				if (deleted) {
-					if (log.isDebugEnabled()) log.debug("file deleted : " + decryptedPath);
+					if (LOGGER.isDebugEnabled()) LOGGER.debug("file deleted : " + decryptedPath);
 				} else {
-					if (log.isDebugEnabled()) log.debug("no such file : " + decryptedPath);
+					if (LOGGER.isDebugEnabled()) LOGGER.debug("no such file : " + decryptedPath);
 				}
 			} catch (Exception e) {
-				log.error(e);
+				LOGGER.error(e);
 				throw new RuntimeException("file deletion failed : " + decryptedPath, e);
 			}
 		}
@@ -339,11 +339,11 @@ public class ApisLauncher extends Launcher {
 	 */
 	private void doSecureCluster_(VertxOptions options) {
 		if (VertxConfig.securityEnabled()) {
-			if (log.isInfoEnabled()) log.info("EventBus will be secured");
+			if (LOGGER.isInfoEnabled()) LOGGER.info("EventBus will be secured");
 			String keyFilePath = VertxConfig.securityPemKeyFile();
 			String certFilePath = VertxConfig.securityPemCertFile();
-			if (log.isDebugEnabled()) log.debug("pem key file : " + keyFilePath);
-			if (log.isDebugEnabled()) log.debug("pem cert file : " + certFilePath);
+			if (LOGGER.isDebugEnabled()) LOGGER.debug("pem key file : " + keyFilePath);
+			if (LOGGER.isDebugEnabled()) LOGGER.debug("pem cert file : " + certFilePath);
 			options.getEventBusOptions().setSsl(true).setPemKeyCertOptions(new PemKeyCertOptions().addKeyPath(keyFilePath).addCertPath(certFilePath));
 		}
 	}
