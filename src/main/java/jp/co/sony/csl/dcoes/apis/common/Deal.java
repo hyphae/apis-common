@@ -4,8 +4,8 @@ import java.util.UUID;
 
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import jp.co.sony.csl.dcoes.apis.common.util.vertx.JsonObjectUtil;
 
 /**
@@ -18,7 +18,7 @@ import jp.co.sony.csl.dcoes.apis.common.util.vertx.JsonObjectUtil;
  * @author OES Project
  */
 public class Deal {
-	private static final Logger log = LoggerFactory.getLogger(Deal.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(Deal.class);
 
 	/**
 	 * This datetime string indicates that there is no datetime information.
@@ -62,7 +62,7 @@ public class Deal {
 		try {
 			return Direction.valueOf(value.toUpperCase());
 		} catch (Exception e) {
-			log.error(e);
+			LOGGER.error(e);
 			return null;
 		}
 	}
