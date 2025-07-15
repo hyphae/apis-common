@@ -23,7 +23,7 @@ import jp.co.sony.csl.dcoes.apis.common.util.DateTimeUtil;
  * @author OES Project
  */
 public class JsonObjectUtil {
-	private static final Logger log = LoggerFactory.getLogger(JsonObjectUtil.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(JsonObjectUtil.class);
 
 	private JsonObjectUtil() { }
 
@@ -40,7 +40,7 @@ public class JsonObjectUtil {
 		try {
 			result = new JsonObject(value);
 		} catch (Exception e) {
-			if (log.isWarnEnabled()) log.warn(e);
+			if (LOGGER.isWarnEnabled()) LOGGER.warn(e);
 			completionHandler.handle(Future.failedFuture(e));
 			return;
 		}
@@ -59,7 +59,7 @@ public class JsonObjectUtil {
 		try {
 			result = new JsonObject(value);
 		} catch (Exception e) {
-			if (log.isWarnEnabled()) log.warn(e);
+			if (LOGGER.isWarnEnabled()) LOGGER.warn(e);
 			completionHandler.handle(Future.failedFuture(e));
 			return;
 		}
@@ -79,7 +79,7 @@ public class JsonObjectUtil {
 		try {
 			result = new JsonArray(value);
 		} catch (Exception e) {
-			if (log.isWarnEnabled()) log.warn(e);
+			if (LOGGER.isWarnEnabled()) LOGGER.warn(e);
 			completionHandler.handle(Future.failedFuture(e));
 			return;
 		}
@@ -98,7 +98,7 @@ public class JsonObjectUtil {
 		try {
 			result = new JsonArray(value);
 		} catch (Exception e) {
-			if (log.isWarnEnabled()) log.warn(e);
+			if (LOGGER.isWarnEnabled()) LOGGER.warn(e);
 			completionHandler.handle(Future.failedFuture(e));
 			return;
 		}
@@ -258,7 +258,7 @@ public class JsonObjectUtil {
 			try {
 				result = minusOneJsonObject.getFloat(lastKey_(keys));
 			} catch (Exception e) {
-				log.error("JsonObjectUtil.getFloat(); keys : " + Arrays.toString(keys) + ", value : " + minusOneJsonObject.getValue(lastKey_(keys)), e);
+				LOGGER.error("JsonObjectUtil.getFloat(); keys : " + Arrays.toString(keys) + ", value : " + minusOneJsonObject.getValue(lastKey_(keys)), e);
 			}
 		}
 		return (result != null) ? result : def;
@@ -300,7 +300,7 @@ public class JsonObjectUtil {
 			try {
 				result = minusOneJsonObject.getInteger(lastKey_(keys));
 			} catch (Exception e) {
-				log.error("JsonObjectUtil.getInteger(); keys : " + Arrays.toString(keys) + ", value : " + minusOneJsonObject.getValue(lastKey_(keys)), e);
+				LOGGER.error("JsonObjectUtil.getInteger(); keys : " + Arrays.toString(keys) + ", value : " + minusOneJsonObject.getValue(lastKey_(keys)), e);
 			}
 		}
 		return (result != null) ? result : def;
@@ -342,7 +342,7 @@ public class JsonObjectUtil {
 			try {
 				result = minusOneJsonObject.getLong(lastKey_(keys));
 			} catch (Exception e) {
-				log.error("JsonObjectUtil.getLong(); keys : " + Arrays.toString(keys) + ", value : " + minusOneJsonObject.getValue(lastKey_(keys)), e);
+				LOGGER.error("JsonObjectUtil.getLong(); keys : " + Arrays.toString(keys) + ", value : " + minusOneJsonObject.getValue(lastKey_(keys)), e);
 			}
 		}
 		return (result != null) ? result : def;
@@ -384,7 +384,7 @@ public class JsonObjectUtil {
 			try {
 				result = minusOneJsonObject.getString(lastKey_(keys));
 			} catch (Exception e) {
-				log.error("JsonObjectUtil.getString(); keys : " + Arrays.toString(keys) + ", value : " + minusOneJsonObject.getValue(lastKey_(keys)), e);
+				LOGGER.error("JsonObjectUtil.getString(); keys : " + Arrays.toString(keys) + ", value : " + minusOneJsonObject.getValue(lastKey_(keys)), e);
 			}
 		}
 		return (result != null) ? result : ((def != null) ? def.value : null);
@@ -427,7 +427,7 @@ public class JsonObjectUtil {
 			try {
 				result = minusOneJsonObject.getBoolean(lastKey_(keys));
 			} catch (Exception e) {
-				log.error("JsonObjectUtil.getBoolean(); keys : " + Arrays.toString(keys) + ", value : " + minusOneJsonObject.getValue(lastKey_(keys)), e);
+				LOGGER.error("JsonObjectUtil.getBoolean(); keys : " + Arrays.toString(keys) + ", value : " + minusOneJsonObject.getValue(lastKey_(keys)), e);
 			}
 		}
 		return (result != null) ? result : def;
@@ -469,7 +469,7 @@ public class JsonObjectUtil {
 			try {
 				result = DateTimeUtil.toLocalDateTime(minusOneJsonObject.getString(lastKey_(keys)));
 			} catch (Exception e) {
-				log.error("JsonObjectUtil.getLocalDateTime(); keys : " + Arrays.toString(keys) + ", value : " + minusOneJsonObject.getValue(lastKey_(keys)), e);
+				LOGGER.error("JsonObjectUtil.getLocalDateTime(); keys : " + Arrays.toString(keys) + ", value : " + minusOneJsonObject.getValue(lastKey_(keys)), e);
 			}
 		}
 		return (result != null) ? result : ((def != null) ? DateTimeUtil.toLocalDateTime(def.value) : null);
@@ -494,7 +494,7 @@ public class JsonObjectUtil {
 			try {
 				result = minusOneJsonObject.getJsonArray(lastKey_(keys));
 			} catch (Exception e) {
-				log.error("JsonObjectUtil.getJsonArray(); keys : " + Arrays.toString(keys) + ", value : " + minusOneJsonObject.getValue(lastKey_(keys)), e);
+				LOGGER.error("JsonObjectUtil.getJsonArray(); keys : " + Arrays.toString(keys) + ", value : " + minusOneJsonObject.getValue(lastKey_(keys)), e);
 			}
 		}
 		return result;
@@ -524,7 +524,7 @@ public class JsonObjectUtil {
 				try {
 					result.add(jsonArray.getFloat(i));
 				} catch (Exception e) {
-					log.error("JsonObjectUtil.getFloatList(); keys : " + Arrays.toString(keys) + ", value : " + jsonArray.getValue(i), e);
+					LOGGER.error("JsonObjectUtil.getFloatList(); keys : " + Arrays.toString(keys) + ", value : " + jsonArray.getValue(i), e);
 				}
 			}
 			return result;
@@ -555,7 +555,7 @@ public class JsonObjectUtil {
 				try {
 					result.add(jsonArray.getInteger(i));
 				} catch (Exception e) {
-					log.error("JsonObjectUtil.getIntegerList(); keys : " + Arrays.toString(keys) + ", value : " + jsonArray.getValue(i), e);
+					LOGGER.error("JsonObjectUtil.getIntegerList(); keys : " + Arrays.toString(keys) + ", value : " + jsonArray.getValue(i), e);
 				}
 			}
 			return result;
@@ -586,7 +586,7 @@ public class JsonObjectUtil {
 				try {
 					result.add(jsonArray.getString(i));
 				} catch (Exception e) {
-					log.error("JsonObjectUtil.getStringList(); keys : " + Arrays.toString(keys) + ", value : " + jsonArray.getValue(i), e);
+					LOGGER.error("JsonObjectUtil.getStringList(); keys : " + Arrays.toString(keys) + ", value : " + jsonArray.getValue(i), e);
 				}
 			}
 			return result;
@@ -613,7 +613,7 @@ public class JsonObjectUtil {
 			try {
 				result = minusOneJsonObject.getJsonObject(lastKey_(keys));
 			} catch (Exception e) {
-				log.error("JsonObjectUtil.getJsonObject(); keys : " + Arrays.toString(keys) + ", value : " + minusOneJsonObject.getValue(lastKey_(keys)), e);
+				LOGGER.error("JsonObjectUtil.getJsonObject(); keys : " + Arrays.toString(keys) + ", value : " + minusOneJsonObject.getValue(lastKey_(keys)), e);
 			}
 		}
 		return result;
@@ -746,7 +746,7 @@ public class JsonObjectUtil {
 			try {
 				lastJsonObject = minusOneJsonObject.getJsonObject(lastKey_(keys));
 			} catch (Exception e) {
-				log.error("JsonObjectUtil.mergeIn(); keys : " + Arrays.toString(keys) + ", value : " + minusOneJsonObject.getValue(lastKey_(keys)), e);
+				LOGGER.error("JsonObjectUtil.mergeIn(); keys : " + Arrays.toString(keys) + ", value : " + minusOneJsonObject.getValue(lastKey_(keys)), e);
 			}
 			if (lastJsonObject == null) {
 				minusOneJsonObject.put(lastKey_(keys), value);
@@ -754,7 +754,7 @@ public class JsonObjectUtil {
 				lastJsonObject.mergeIn(value, true);
 			}
 		} else {
-			if (log.isWarnEnabled()) log.warn("JsonObjectUtil#mergeIn(); value is null; keys : " + Arrays.toString(keys));
+			if (LOGGER.isWarnEnabled()) LOGGER.warn("JsonObjectUtil#mergeIn(); value is null; keys : " + Arrays.toString(keys));
 		}
 	}
 
@@ -783,7 +783,7 @@ public class JsonObjectUtil {
 			try {
 				jsonArray = minusOneJsonObject.getJsonArray(lastKey_(keys));
 			} catch (Exception e) {
-				log.error("JsonObjectUtil.add(); keys : " + Arrays.toString(keys) + ", value : " + minusOneJsonObject.getValue(lastKey_(keys)), e);
+				LOGGER.error("JsonObjectUtil.add(); keys : " + Arrays.toString(keys) + ", value : " + minusOneJsonObject.getValue(lastKey_(keys)), e);
 			}
 			if (jsonArray == null) {
 				jsonArray = new JsonArray();
@@ -791,7 +791,7 @@ public class JsonObjectUtil {
 			}
 			jsonArray.add(value);
 		} else {
-			if (log.isWarnEnabled()) log.warn("JsonObjectUtil#add(); value is null; keys : " + Arrays.toString(keys));
+			if (LOGGER.isWarnEnabled()) LOGGER.warn("JsonObjectUtil#add(); value is null; keys : " + Arrays.toString(keys));
 		}
 	}
 
