@@ -18,7 +18,7 @@ import org.slf4j.LoggerFactory;
  * @author OES Project
  */
 public class WatchdogRestarting extends AbstractVerticle {
-	private static final Logger log = LoggerFactory.getLogger(WatchdogRestarting.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(WatchdogRestarting.class);
 
 	/**
 	 * This is the default cycle for restarting WatchDog.
@@ -56,7 +56,7 @@ public class WatchdogRestarting extends AbstractVerticle {
 				if (client_ != null) {
 					watchdogRestartingTimerHandler_(0L);
 				}
-				if (log.isTraceEnabled()) log.trace("started : " + deploymentID());
+				if (LOGGER.isTraceEnabled()) LOGGER.trace("started : " + deploymentID());
 				startFuture.complete();
 			} else {
 				startFuture.fail(resInit.cause());
@@ -74,7 +74,7 @@ public class WatchdogRestarting extends AbstractVerticle {
 	 */
 	@Override public void stop() throws Exception {
 		stopped_ = true;
-		if (log.isTraceEnabled()) log.trace("stopped : " + deploymentID());
+		if (LOGGER.isTraceEnabled()) LOGGER.trace("stopped : " + deploymentID());
 	}
 
 	////
@@ -96,7 +96,7 @@ public class WatchdogRestarting extends AbstractVerticle {
 	protected void init(Handler<AsyncResult<Void>> completionHandler) {
 		Boolean enabled = VertxConfig.config.getBoolean(Boolean.FALSE, "watchdog", "enabled");
 		if (enabled) {
-			if (log.isInfoEnabled()) log.info("watchdog enabled");
+			if (LOGGER.isInfoEnabled()) LOGGER.info("watchdog enabled");
 			String host = VertxConfig.config.getString("watchdog", "host");
 			Integer port = VertxConfig.config.getInteger("watchdog", "port");
 			uri_ = VertxConfig.config.getString("watchdog", "uri");
@@ -107,7 +107,7 @@ public class WatchdogRestarting extends AbstractVerticle {
 				completionHandler.handle(Future.failedFuture("invalid watchdog.host and/or watchdog.port and/or watchdog.uri value in config : " + VertxConfig.config.jsonObject()));
 			}
 		} else {
-			if (log.isInfoEnabled()) log.info("watchdog disabled");
+			if (LOGGER.isInfoEnabled()) LOGGER.info("watchdog disabled");
 			completionHandler.handle(Future.succeededFuture());
 		}
 	}
@@ -140,14 +140,14 @@ public class WatchdogRestarting extends AbstractVerticle {
 	private void watchdogRestartingTimerHandler_(Long timerId) {
 		if (stopped_) return;
 		if (null == timerId || timerId.longValue() != watchdogRestartingTimerId_) {
-			if (log.isWarnEnabled()) log.warn("illegal timerId : " + timerId + ", watchdogRestartingTimerId_ : " + watchdogRestartingTimerId_);
+			if (LOGGER.isWarnEnabled()) LOGGER.warn("illegal timerId : " + timerId + ", watchdogRestartingTimerId_ : " + watchdogRestartingTimerId_);
 			return;
 		}
 		new Sender_().execute_(r -> {
 			if (r.succeeded()) {
 				// nop
 			} else {
-				log.error(r.cause().getMessage());
+				LOGGER.error(r.cause().getMessage());
 			}
 			setWatchdogRestartingTimer_();
 		});
@@ -177,7 +177,7 @@ public class WatchdogRestarting extends AbstractVerticle {
 					completed_ = true;
 					completionHandler.handle(r);
 				} else {
-					log.error("send_() result returned more than once : " + r);
+					LOGGER.error("send_() result returned more than once : " + r);
 				}
 			});
 		}
@@ -192,7 +192,7 @@ public class WatchdogRestarting extends AbstractVerticle {
 		private void send_(Handler<AsyncResult<Void>> completionHandler) {
 			Long requestTimeoutMsec = VertxConfig.config.getLong(DEFAULT_REQUEST_TIMEOUT_MSEC, "watchdog", "requestTimeoutMsec");
 			client_.get(uri_, resGet -> {
-				if (log.isDebugEnabled()) log.debug("status : " + resGet.statusCode());
+				if (LOGGER.isDebugEnabled()) LOGGER.debug("status : " + resGet.statusCode());
 				if (resGet.statusCode() == 200) {
 					completionHandler.handle(Future.succeededFuture());
 				} else {
