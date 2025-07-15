@@ -22,7 +22,7 @@ import jp.co.sony.csl.dcoes.apis.common.util.StackTraceUtil;
  * @author OES Project
  */
 public class LocalExclusiveLock {
-	private static final Logger log = LoggerFactory.getLogger(LocalExclusiveLock.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(LocalExclusiveLock.class);
 
 	/**
 	 * Sets time that lock is maintained for more than a certain period of time as log output function's wait time.	 
@@ -107,7 +107,7 @@ public class LocalExclusiveLock {
 				} else {
 					// Does not return anything if already in locked state
 					// すでにロック状態なら何も返さない
-					if (log.isInfoEnabled()) log.info("local exclusive lock for " + name_ + " ; queue size : " + queue_.size());
+					if (LOGGER.isInfoEnabled()) LOGGER.info("local exclusive lock for " + name_ + " ; queue size : " + queue_.size());
 					promise.complete();
 				}
 			}
@@ -131,7 +131,7 @@ public class LocalExclusiveLock {
 	 * @param vertx vertx インスタンス
 	 */
 	public void reset(Vertx vertx) {
-		if (log.isInfoEnabled()) log.info("reset local exclusive lock for " + name_);
+		if (LOGGER.isInfoEnabled()) LOGGER.info("reset local exclusive lock for " + name_);
 		vertx.<Queue<Entry_>>executeBlocking(promise -> {
 			synchronized (queue_) { // Synchronizes by separating and processing threads
 									// スレッドを分けて処理し同期する
@@ -264,14 +264,14 @@ public class LocalExclusiveLock {
 		private void lockCheckTimerHandler_(Long timerId) {
 			if (released_) return;
 			if (null == timerId || timerId.longValue() != timerId_) {
-				if (log.isWarnEnabled()) log.warn("illegal timerId : " + timerId + ", timerId_ : " + timerId_);
+				if (LOGGER.isWarnEnabled()) LOGGER.warn("illegal timerId : " + timerId + ", timerId_ : " + timerId_);
 				return;
 			}
 			long lockingTime = System.currentTimeMillis() - acquiredTime_;
 			String message = "Lock " + this + " has been locked for " + lockingTime + " ms ; limit : " + DEFAULT_LOCK_LIMIT_MSEC;
 			VertxException stackTrace = new VertxException("Lock limit exceeded");
 			stackTrace.setStackTrace(stackTrace_);
-			if (log.isWarnEnabled()) log.warn(message, stackTrace);
+			if (LOGGER.isWarnEnabled()) LOGGER.warn(message, stackTrace);
 			setLockCheckTimer_();
 		}
 		/**
@@ -288,7 +288,7 @@ public class LocalExclusiveLock {
 					if (released_) {
 						// Release completed ( Measure if called multiple times due to bug on user's side) → Warns and ignores
 						// リリース済み ( 利用側のバグで複数回呼ばれた場合の対策 ) → 警告してスルー
-						if (log.isWarnEnabled()) log.warn("local exclusive lock for " + name_ + " ; already released");
+						if (LOGGER.isWarnEnabled()) LOGGER.warn("local exclusive lock for " + name_ + " ; already released");
 						promise.complete();
 					} else {
 						released_ = true;
@@ -310,7 +310,7 @@ public class LocalExclusiveLock {
 				if (next != null) {
 					// When the next entry is returned, creates new lock object and returns it → Lock acquisition is successful
 					// 次のエントリが返ってきたら新しいロックオブジェクトを作って返す → ロック獲得成功
-					if (log.isInfoEnabled()) log.info("local exclusive lock for " + name_ + " ; queue size : " + queue_.size());
+					if (LOGGER.isInfoEnabled()) LOGGER.info("local exclusive lock for " + name_ + " ; queue size : " + queue_.size());
 					next.context_.runOnContext(v -> {
 						next.completionHandler_.handle(Future.succeededFuture(new Lock_(vertx_, next.stackTrace_)));
 					});
