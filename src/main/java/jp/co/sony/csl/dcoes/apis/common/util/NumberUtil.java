@@ -1,7 +1,7 @@
 package jp.co.sony.csl.dcoes.apis.common.util;
 
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This is a trivial {@link Number} related tool.
@@ -10,7 +10,7 @@ import io.vertx.core.logging.LoggerFactory;
  * @author OES Project
  */
 public class NumberUtil {
-	private static final Logger log = LoggerFactory.getLogger(NumberUtil.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(NumberUtil.class);
 
 	private NumberUtil() { }
 
@@ -49,7 +49,7 @@ public class NumberUtil {
 			try {
 				return Integer.valueOf(value);
 			} catch (Exception e) {
-				if (log.isWarnEnabled()) log.warn(e);
+				if (LOGGER.isWarnEnabled()) LOGGER.warn(e);
 			}
 		}
 		return null;
