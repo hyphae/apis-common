@@ -26,7 +26,7 @@ public class DateTimeUtil {
 	 * APIS プログラムの標準フォーマット.
 	 * uuuu/MM/dd-HH:mm:ss
 	 */
-	private static final DateTimeFormatter LocalDateTimeFormatter_ = DateTimeFormatter.ofPattern("uuuu/MM/dd-HH:mm:ss");
+	private static final DateTimeFormatter LOCAL_DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("uuuu/MM/dd-HH:mm:ss");
 
 	/**
 	 * Gets {@link LocalDateTime} by passing string in APIS program standard format.
@@ -45,7 +45,7 @@ public class DateTimeUtil {
 			int pos = value.indexOf('.');
 			if (-1 != pos) value = value.substring(0, pos);
 			try {
-				return LocalDateTime.parse(value, LocalDateTimeFormatter_);
+				return LocalDateTime.parse(value, LOCAL_DATE_TIME_FORMATTER);
 			} catch (Exception e) {
 				if (LOGGER.isWarnEnabled()) LOGGER.warn(e);
 			}
@@ -87,7 +87,7 @@ public class DateTimeUtil {
 	 *         {@code value} が {@code null} なら {@code null}.
 	 */
 	public static String toString(LocalDateTime value) {
-		return (value != null) ? LocalDateTimeFormatter_.format(value) : null;
+		return (value != null) ? LOCAL_DATE_TIME_FORMATTER.format(value) : null;
 	}
 	/**
 	 * Gets {@link LocalTime} as string in {@link DateTimeFormatter#ISO_LOCAL_TIME} format.
