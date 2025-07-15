@@ -1,7 +1,7 @@
 package jp.co.sony.csl.dcoes.apis.common.util;
 
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -16,7 +16,7 @@ import java.time.format.DateTimeFormatter;
  * @author OES Project
  */
 public class DateTimeUtil {
-	private static final Logger log = LoggerFactory.getLogger(DateTimeUtil.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(DateTimeUtil.class);
 
 	private DateTimeUtil() { }
 
@@ -47,7 +47,7 @@ public class DateTimeUtil {
 			try {
 				return LocalDateTime.parse(value, LocalDateTimeFormatter_);
 			} catch (Exception e) {
-				if (log.isWarnEnabled()) log.warn(e);
+				if (LOGGER.isWarnEnabled()) LOGGER.warn(e);
 			}
 		}
 		return null;
