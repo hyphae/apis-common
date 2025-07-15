@@ -21,7 +21,7 @@ import java.util.List;
  * @author OES Project
  */
 public class JsonObjectWrapper {
-	private static final Logger log = LoggerFactory.getLogger(JsonObjectWrapper.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(JsonObjectWrapper.class);
 
 	private JsonObject jsonObject_;
 
@@ -756,7 +756,7 @@ public class JsonObjectWrapper {
 			JsonObjectUtil.mergeIn(newJsonObject, value, keys);
 			jsonObject_ = newJsonObject;
 		} else {
-			if (log.isWarnEnabled()) log.warn("JsonObjectWrapper.mergeIn(); value is null; keys : " + Arrays.toString(keys));
+			if (LOGGER.isWarnEnabled()) LOGGER.warn("JsonObjectWrapper.mergeIn(); value is null; keys : " + Arrays.toString(keys));
 		}
 	}
 
@@ -782,7 +782,7 @@ public class JsonObjectWrapper {
 			JsonObjectUtil.add(newJsonObject, value, keys);
 			jsonObject_ = newJsonObject;
 		} else {
-			if (log.isWarnEnabled()) log.warn("JsonObjectWrapper.add(); value is null; keys : " + Arrays.toString(keys));
+			if (LOGGER.isWarnEnabled()) LOGGER.warn("JsonObjectWrapper.add(); value is null; keys : " + Arrays.toString(keys));
 		}
 	}
 
