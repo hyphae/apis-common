@@ -22,7 +22,7 @@ import jp.co.sony.csl.dcoes.apis.common.util.JulUtil;
  * @author OES Project
  */
 public abstract class AbstractStarter extends AbstractVerticle {
-	private static final Logger log = LoggerFactory.getLogger(AbstractStarter.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(AbstractStarter.class);
 
 	/**
 	 * Sets APIS program version (string).
@@ -57,10 +57,10 @@ public abstract class AbstractStarter extends AbstractVerticle {
 											if (resWatchdogRestarting.succeeded()) {
 												doStart(resDoStart -> {
 													if (resDoStart.succeeded()) {
-														if (log.isInfoEnabled()) log.info("APIS version : " + AbstractStarter.APIS_VERSION);
-														if (log.isInfoEnabled()) log.info("communityId  : " + VertxConfig.communityId());
-														if (log.isInfoEnabled()) log.info("clusterId    : " + VertxConfig.clusterId());
-														if (log.isTraceEnabled()) log.trace("started : " + deploymentID());
+														if (LOGGER.isInfoEnabled()) LOGGER.info("APIS version : " + AbstractStarter.APIS_VERSION);
+														if (LOGGER.isInfoEnabled()) LOGGER.info("communityId  : " + VertxConfig.communityId());
+														if (LOGGER.isInfoEnabled()) LOGGER.info("clusterId    : " + VertxConfig.clusterId());
+														if (LOGGER.isTraceEnabled()) LOGGER.trace("started : " + deploymentID());
 														startPromise.complete();
 													} else {
 														startPromise.fail(resDoStart.cause());
@@ -103,9 +103,9 @@ public abstract class AbstractStarter extends AbstractVerticle {
 			if (resDoStop.succeeded()) {
 				// nop
 			} else {
-				log.error(resDoStop.cause());
+				LOGGER.error(resDoStop.cause());
 			}
-			if (log.isTraceEnabled()) log.trace("stopped : " + deploymentID());
+			if (LOGGER.isTraceEnabled()) LOGGER.trace("stopped : " + deploymentID());
 			stopPromise.complete();
 		});
 	}
@@ -139,22 +139,22 @@ public abstract class AbstractStarter extends AbstractVerticle {
 		((VertxImpl) vertx).addCloseHook(new Closeable() {
 			@Override public void close(Handler<AsyncResult<Void>> completionHandler) {
 				String msg = "Vert.x close hook invoked";
-				if (log.isInfoEnabled()) log.info(msg);
+				if (LOGGER.isInfoEnabled()) LOGGER.info(msg);
 				System.out.println(msg);
 				doShutdown(r -> {
 					if (r.succeeded()) {
 						String msg2 = "done";
-						if (log.isInfoEnabled()) log.info(msg2);
+						if (LOGGER.isInfoEnabled()) LOGGER.info(msg2);
 						System.out.println(msg2);
 					} else {
-						log.error(r.cause());
+						LOGGER.error(r.cause());
 						System.err.println(r.cause());
 					}
 					completionHandler.handle(r);
 				});
 			}
 		});
-		if (log.isInfoEnabled()) log.info("Vert.x close hook initialized");
+		if (LOGGER.isInfoEnabled()) LOGGER.info("Vert.x close hook initialized");
 	}
 	private static final String MAP_NAME = AbstractStarter.class.getName();
 	private static final String MAP_KEY_APIS_VERSION = "apisVersion";
@@ -230,11 +230,11 @@ public abstract class AbstractStarter extends AbstractVerticle {
 	private void startMulticastLogHandlerLevelService_(Handler<AsyncResult<Void>> completionHandler) {
 		vertx.eventBus().<String>consumer(ServiceAddress.multicastLogHandlerLevel(), req -> {
 			try {
-				if (log.isInfoEnabled()) log.info("setting multicast log level to : " + req.body() + " ...");
+				if (LOGGER.isInfoEnabled()) LOGGER.info("setting multicast log level to : " + req.body() + " ...");
 				JulUtil.setRootMulticastHandlerLevel(req.body());
 				req.reply("ok");
 			} catch (Exception e) {
-				log.error(e);
+				LOGGER.error(e);
 				req.fail(-1, e.getMessage());
 			}
 		}).completionHandler(completionHandler);
@@ -262,7 +262,7 @@ public abstract class AbstractStarter extends AbstractVerticle {
 	 */
 	private void startShutdownLocalService_(Handler<AsyncResult<Void>> completionHandler) {
 		vertx.eventBus().<Void>localConsumer(ServiceAddress.shutdownLocal(), req -> {
-			if (log.isInfoEnabled()) log.info(ServiceAddress.shutdownLocal() + " received");
+			if (LOGGER.isInfoEnabled()) LOGGER.info(ServiceAddress.shutdownLocal() + " received");
 			req.reply("ok");
 			shutdown_();
 		}).completionHandler(completionHandler);
@@ -289,7 +289,7 @@ public abstract class AbstractStarter extends AbstractVerticle {
 	 */
 	private void startShutdownAllService_(Handler<AsyncResult<Void>> completionHandler) {
 		vertx.eventBus().<Void>consumer(ServiceAddress.shutdownAll(), req -> {
-			if (log.isInfoEnabled()) log.info(ServiceAddress.shutdownAll() + " received");
+			if (LOGGER.isInfoEnabled()) LOGGER.info(ServiceAddress.shutdownAll() + " received");
 			req.reply("ok");
 			shutdown_();
 		}).completionHandler(completionHandler);
@@ -303,14 +303,14 @@ public abstract class AbstractStarter extends AbstractVerticle {
 	 * 必要に応じてサブクラスで実装する.
 	 */
 	private void shutdown_() {
-		if (log.isInfoEnabled()) log.info("shutting down ...");
+		if (LOGGER.isInfoEnabled()) LOGGER.info("shutting down ...");
 		doShutdown(resDoShutdown -> {
 			if (resDoShutdown.succeeded()) {
 				// nop
 			} else {
-				log.error(resDoShutdown.cause());
+				LOGGER.error(resDoShutdown.cause());
 			}
-			if (log.isInfoEnabled()) log.info("closing Vert.x ...");
+			if (LOGGER.isInfoEnabled()) LOGGER.info("closing Vert.x ...");
 			vertx.close();
 		});
 	}
@@ -369,7 +369,7 @@ public abstract class AbstractStarter extends AbstractVerticle {
 	 */
 	protected void handleUnhandledException(Throwable t) {
 		// default implementation
-		log.error("Unhandled exception caught", t);
+		LOGGER.error("Unhandled exception caught", t);
 	}
 
 }
