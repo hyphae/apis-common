@@ -3,8 +3,8 @@ package jp.co.sony.csl.dcoes.apis.common.util;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
@@ -27,7 +27,7 @@ import jp.co.sony.csl.dcoes.apis.common.util.vertx.VertxConfig;
  * @author OES Project
  */
 public class EncryptionUtil {
-	private static final Logger log = LoggerFactory.getLogger(EncryptionUtil.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(EncryptionUtil.class);
 
 	/**
 	 * Encryption algorithm.
@@ -80,11 +80,11 @@ public class EncryptionUtil {
 			DEFAULT_KEY = generateKey(defaultSeed);
 			DEFAULT_ALGORITHM_PARAMETER_SPEC = generateIv(defaultSeed);
 		} catch (Exception e) {
-			log.error(e);
+			LOGGER.error(e);
 			completionHandler.handle(Future.failedFuture(e));
 			return;
 		}
-		if (log.isInfoEnabled()) log.info("initialized");
+		if (LOGGER.isInfoEnabled()) LOGGER.info("initialized");
 		completionHandler.handle(Future.succeededFuture());
 	}
 

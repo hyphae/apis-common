@@ -1,7 +1,7 @@
 package jp.co.sony.csl.dcoes.apis.common.util;
 
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -16,7 +16,7 @@ import java.time.format.DateTimeFormatter;
  * @author OES Project
  */
 public class DateTimeUtil {
-	private static final Logger log = LoggerFactory.getLogger(DateTimeUtil.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(DateTimeUtil.class);
 
 	private DateTimeUtil() { }
 
@@ -26,7 +26,7 @@ public class DateTimeUtil {
 	 * APIS プログラムの標準フォーマット.
 	 * uuuu/MM/dd-HH:mm:ss
 	 */
-	private static final DateTimeFormatter LocalDateTimeFormatter_ = DateTimeFormatter.ofPattern("uuuu/MM/dd-HH:mm:ss");
+	private static final DateTimeFormatter LOCAL_DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("uuuu/MM/dd-HH:mm:ss");
 
 	/**
 	 * Gets {@link LocalDateTime} by passing string in APIS program standard format.
@@ -45,9 +45,9 @@ public class DateTimeUtil {
 			int pos = value.indexOf('.');
 			if (-1 != pos) value = value.substring(0, pos);
 			try {
-				return LocalDateTime.parse(value, LocalDateTimeFormatter_);
+				return LocalDateTime.parse(value, LOCAL_DATE_TIME_FORMATTER);
 			} catch (Exception e) {
-				if (log.isWarnEnabled()) log.warn(e);
+				if (LOGGER.isWarnEnabled()) LOGGER.warn(e);
 			}
 		}
 		return null;
@@ -87,7 +87,7 @@ public class DateTimeUtil {
 	 *         {@code value} が {@code null} なら {@code null}.
 	 */
 	public static String toString(LocalDateTime value) {
-		return (value != null) ? LocalDateTimeFormatter_.format(value) : null;
+		return (value != null) ? LOCAL_DATE_TIME_FORMATTER.format(value) : null;
 	}
 	/**
 	 * Gets {@link LocalTime} as string in {@link DateTimeFormatter#ISO_LOCAL_TIME} format.

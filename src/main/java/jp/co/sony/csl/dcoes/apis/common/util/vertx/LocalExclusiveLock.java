@@ -4,10 +4,11 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Context;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxException;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.PriorityQueue;
 import java.util.Queue;
@@ -21,7 +22,7 @@ import jp.co.sony.csl.dcoes.apis.common.util.StackTraceUtil;
  * @author OES Project
  */
 public class LocalExclusiveLock {
-	private static final Logger log = LoggerFactory.getLogger(LocalExclusiveLock.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(LocalExclusiveLock.class);
 
 	/**
 	 * Sets time that lock is maintained for more than a certain period of time as log output function's wait time.	 
@@ -94,7 +95,7 @@ public class LocalExclusiveLock {
 	 */
 	public void acquire(Vertx vertx, boolean privileged, Handler<AsyncResult<Lock>> completionHandler) {
 		Entry_ entry = new Entry_(privileged, vertx.getOrCreateContext(), completionHandler);
-		vertx.<Entry_>executeBlocking(future -> {
+		vertx.<Entry_>executeBlocking(promise -> {
 			synchronized (queue_) { // Synchronizes by separating and processing threads
 									// スレッドを分けて処理し同期する
 				queue_.add(entry);
@@ -102,12 +103,12 @@ public class LocalExclusiveLock {
 					// If not in locked state, puts in locked state and retrieves and returns the first entry in queue
 					// ロック状態でなければロック状態にしキューの最初のエントリを取り出して返す
 					locked_ = true;
-					future.complete(queue_.poll());
+					promise.complete(queue_.poll());
 				} else {
 					// Does not return anything if already in locked state
 					// すでにロック状態なら何も返さない
-					if (log.isInfoEnabled()) log.info("local exclusive lock for " + name_ + " ; queue size : " + queue_.size());
-					future.complete();
+					if (LOGGER.isInfoEnabled()) LOGGER.info("local exclusive lock for " + name_ + " ; queue size : " + queue_.size());
+					promise.complete();
 				}
 			}
 		}, res -> {
@@ -130,8 +131,8 @@ public class LocalExclusiveLock {
 	 * @param vertx vertx インスタンス
 	 */
 	public void reset(Vertx vertx) {
-		if (log.isInfoEnabled()) log.info("reset local exclusive lock for " + name_);
-		vertx.<Queue<Entry_>>executeBlocking(future -> {
+		if (LOGGER.isInfoEnabled()) LOGGER.info("reset local exclusive lock for " + name_);
+		vertx.<Queue<Entry_>>executeBlocking(promise -> {
 			synchronized (queue_) { // Synchronizes by separating and processing threads
 									// スレッドを分けて処理し同期する
 				// Copies the queue, empties original queue, releases lock state, and returns copied queue
@@ -139,7 +140,7 @@ public class LocalExclusiveLock {
 				Queue<Entry_> queue = new PriorityQueue<>(queue_);
 				queue_.clear();
 				locked_ = false;
-				future.complete(queue);
+				promise.complete(queue);
 			}
 		}, res -> {
 			Queue<Entry_> queue = res.result();
@@ -194,13 +195,14 @@ public class LocalExclusiveLock {
 				thisVal = this.hashCode();
 				otherVal = other.hashCode();
 			}
-			if(otherVal < thisVal) {
-				return -1;
-			} else if (thisVal < otherVal) {
-				return 1;
-			} else {
-				return 0;
-			}
+			// if(otherVal < thisVal) {
+			// 	return -1;
+			// } else if (thisVal < otherVal) {
+			// 	return 1;
+			// } else {
+			// 	return 0;
+			// }
+			return Integer.compare(otherVal, thisVal);
 		}
 	}
 
@@ -262,14 +264,14 @@ public class LocalExclusiveLock {
 		private void lockCheckTimerHandler_(Long timerId) {
 			if (released_) return;
 			if (null == timerId || timerId.longValue() != timerId_) {
-				if (log.isWarnEnabled()) log.warn("illegal timerId : " + timerId + ", timerId_ : " + timerId_);
+				if (LOGGER.isWarnEnabled()) LOGGER.warn("illegal timerId : " + timerId + ", timerId_ : " + timerId_);
 				return;
 			}
 			long lockingTime = System.currentTimeMillis() - acquiredTime_;
 			String message = "Lock " + this + " has been locked for " + lockingTime + " ms ; limit : " + DEFAULT_LOCK_LIMIT_MSEC;
 			VertxException stackTrace = new VertxException("Lock limit exceeded");
 			stackTrace.setStackTrace(stackTrace_);
-			if (log.isWarnEnabled()) log.warn(message, stackTrace);
+			if (LOGGER.isWarnEnabled()) LOGGER.warn(message, stackTrace);
 			setLockCheckTimer_();
 		}
 		/**
@@ -280,26 +282,26 @@ public class LocalExclusiveLock {
 		 */
 		@Override public void release() {
 			vertx_.cancelTimer(timerId_);
-			vertx_.<Entry_>executeBlocking(future -> {
+			vertx_.<Entry_>executeBlocking(promise -> {
 				synchronized (queue_) { // Synchronizes by separating threads and processing
 										// スレッドを分けて処理し同期する
 					if (released_) {
 						// Release completed ( Measure if called multiple times due to bug on user's side) → Warns and ignores
 						// リリース済み ( 利用側のバグで複数回呼ばれた場合の対策 ) → 警告してスルー
-						if (log.isWarnEnabled()) log.warn("local exclusive lock for " + name_ + " ; already released");
-						future.complete();
+						if (LOGGER.isWarnEnabled()) LOGGER.warn("local exclusive lock for " + name_ + " ; already released");
+						promise.complete();
 					} else {
 						released_ = true;
 						if (!queue_.isEmpty()) {
 							// If there is an entry in the queue, puts it in lock state, retrieves the first entry in queues, and returns it.
 							// キューにエントリがあったらロック状態にしキューの最初のエントリを取り出して返す
 							locked_ = true;
-							future.complete(queue_.poll());
+							promise.complete(queue_.poll());
 						} else {
 							// If queue is empty, removes lock state and does not return anything
 							// キューが空ならロック状態を解除し何も返さない
 							locked_ = false;
-							future.complete();
+							promise.complete();
 						}
 					}
 				}
@@ -308,7 +310,7 @@ public class LocalExclusiveLock {
 				if (next != null) {
 					// When the next entry is returned, creates new lock object and returns it → Lock acquisition is successful
 					// 次のエントリが返ってきたら新しいロックオブジェクトを作って返す → ロック獲得成功
-					if (log.isInfoEnabled()) log.info("local exclusive lock for " + name_ + " ; queue size : " + queue_.size());
+					if (LOGGER.isInfoEnabled()) LOGGER.info("local exclusive lock for " + name_ + " ; queue size : " + queue_.size());
 					next.context_.runOnContext(v -> {
 						next.completionHandler_.handle(Future.succeededFuture(new Lock_(vertx_, next.stackTrace_)));
 					});

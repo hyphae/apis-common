@@ -1,7 +1,7 @@
 package jp.co.sony.csl.dcoes.apis.common.util;
 
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.UnsupportedEncodingException;
@@ -14,7 +14,7 @@ import java.net.URLEncoder;
  * @author OES Project
  */
 public class StringUtil {
-	private static final Logger log = LoggerFactory.getLogger(StringUtil.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(StringUtil.class);
 
 	/**
 	 * String to be replaced by path of temporary file location (e.g. /tmp for UNIX systems) in {@link #fixFilePath(String)}.
@@ -59,7 +59,7 @@ public class StringUtil {
 			if (tmpdir.endsWith(File.separator)) tmpdir = tmpdir.substring(0, tmpdir.length() - 1);
 			result = result.replace(TMPDIR, tmpdir);
 		}
-		if (log.isInfoEnabled()) log.info("fixFilePath : [" + value + "] -> [" + result + ']');
+		if (LOGGER.isInfoEnabled()) LOGGER.info("fixFilePath : [" + value + "] -> [" + result + ']');
 		return result;
 	}
 
@@ -78,7 +78,7 @@ public class StringUtil {
 			try {
 				return URLEncoder.encode(value, "UTF-8");
 			} catch (UnsupportedEncodingException e) {
-				log.error(e);
+				LOGGER.error(e);
 			}
 		}
 		return value;

@@ -12,7 +12,9 @@ import io.vertx.core.eventbus.ReplyFailure;
  */
 public class ReplyFailureUtil {
 
-	private ReplyFailureUtil() { }
+	private ReplyFailureUtil() {
+		//prevent instantiation
+	}
 
 	/**
 	 * Gets the type of failure if EventBus send fails.

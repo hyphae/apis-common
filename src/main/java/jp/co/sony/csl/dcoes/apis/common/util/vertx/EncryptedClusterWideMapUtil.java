@@ -13,11 +13,12 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import io.vertx.core.shareddata.AsyncMap;
 import jp.co.sony.csl.dcoes.apis.common.util.EncryptionUtil;
 
@@ -28,7 +29,7 @@ import jp.co.sony.csl.dcoes.apis.common.util.EncryptionUtil;
  * @author OES Project
  */
 public class EncryptedClusterWideMapUtil {
-	private static final Logger log = LoggerFactory.getLogger(EncryptedClusterWideMapUtil.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(EncryptedClusterWideMapUtil.class);
 
 	private static final char CLASS_VALUE_DELIMITER = ':';
 	private static final String CLASS_CODE_STRING = "s";
@@ -38,7 +39,7 @@ public class EncryptedClusterWideMapUtil {
 	private static boolean SECURE_CLUSTER = VertxConfig.securityEnabled();
 	static {
 		if (SECURE_CLUSTER) {
-			if (log.isInfoEnabled()) log.info("ClusterWideMap will be encrypted");
+			if (LOGGER.isInfoEnabled()) LOGGER.info("ClusterWideMap will be encrypted");
 		}
 	}
 
@@ -89,7 +90,7 @@ public class EncryptedClusterWideMapUtil {
 					try {
 						result = new EncryptedAsyncMap<K, V>(resMap.result(), seed);
 					} catch (Exception e) {
-						log.error(e);
+						LOGGER.error(e);
 						resultHandler.handle(Future.failedFuture(e));
 						return;
 					}
@@ -160,7 +161,7 @@ public class EncryptedClusterWideMapUtil {
 				try {
 					decrypted = EncryptionUtil.decrypt(value, cipher_, seed_);
 				} catch (Exception e) {
-					log.error(e);
+					LOGGER.error(e);
 					resultHandler.handle(Future.failedFuture(e));
 					return;
 				}
@@ -228,7 +229,7 @@ public class EncryptedClusterWideMapUtil {
 				try {
 					encrypted = EncryptionUtil.encrypt(value, cipher_, seed_);
 				} catch (Exception e) {
-					log.error(e);
+					LOGGER.error(e);
 					resultHandler.handle(Future.failedFuture(e));
 					return;
 				}
@@ -436,11 +437,11 @@ public class EncryptedClusterWideMapUtil {
 					List<String> values = resValues.result();
 					@SuppressWarnings("rawtypes") List<Future> futures = new ArrayList<>(values.size());
 					for (String value : values) {
-						Future<V> future = Future.future();
-						decrypt_(value, future);
-						futures.add(future);
+						Promise<V> promise = Promise.promise();
+						decrypt_(value, promise);
+						futures.add(promise.future());
 					}
-					CompositeFuture.all(futures).setHandler(ar -> {
+					CompositeFuture.all(futures).onComplete(ar -> {
 						if (ar.succeeded()) {
 							List<V> result = new ArrayList<>(ar.result().size());
 							for (int i = ar.result().size(); 0 < i--;) {
@@ -468,11 +469,11 @@ public class EncryptedClusterWideMapUtil {
 					for (K key : entries.keySet()) keys.add(key);
 					@SuppressWarnings("rawtypes") List<Future> futures = new ArrayList<>(keys.size());
 					for (K key : keys) {
-						Future<V> future = Future.future();
-						decrypt_(entries.get(key), future);
-						futures.add(future);
+						Promise<V> promise = Promise.promise();
+						decrypt_(value, promise);
+						futures.add(promise.future());
 					}
-					CompositeFuture.all(futures).setHandler(ar -> {
+					CompositeFuture.all(futures).onComplete(ar -> {
 						if (ar.succeeded()) {
 							Map<K, V> result = new HashMap<>(ar.result().size());
 							for (int i = ar.result().size(); 0 < i--;) {

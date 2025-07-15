@@ -2,8 +2,8 @@ package jp.co.sony.csl.dcoes.apis.common;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import jp.co.sony.csl.dcoes.apis.common.util.StackTraceUtil;
 import jp.co.sony.csl.dcoes.apis.common.util.vertx.JsonObjectUtil;
 
@@ -20,7 +20,7 @@ import jp.co.sony.csl.dcoes.apis.common.util.vertx.JsonObjectUtil;
 // java.lang.Error ともカブってるし、Level.ERROR とも紛らわしいし (T_T)
 // Failure とかどうかな ...
 public class Error {
-	private static final Logger log = LoggerFactory.getLogger(Error.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(Error.class);
 
 	private Error() { }
 
@@ -143,7 +143,7 @@ public class Error {
 		try {
 			return Error.Category.valueOf(value);
 		} catch (Exception e) {
-			log.error(e);
+			LOGGER.error(e);
 			return Error.Category.UNKNOWN;
 		}
 	}
@@ -161,7 +161,7 @@ public class Error {
 		try {
 			return Error.Extent.valueOf(value);
 		} catch (Exception e) {
-			log.error(e);
+			LOGGER.error(e);
 			return Error.Extent.UNKNOWN;
 		}
 	}
@@ -179,7 +179,7 @@ public class Error {
 		try {
 			return Error.Level.valueOf(value);
 		} catch (Exception e) {
-			log.error(e);
+			LOGGER.error(e);
 			return Error.Level.UNKNOWN;
 		}
 	}
