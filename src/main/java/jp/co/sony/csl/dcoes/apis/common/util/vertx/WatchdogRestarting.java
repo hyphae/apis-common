@@ -191,8 +191,7 @@ public class WatchdogRestarting extends AbstractVerticle {
 		 */
 		private void send_(Handler<AsyncResult<Void>> completionHandler) {
 			Long requestTimeoutMsec = VertxConfig.config.getLong(DEFAULT_REQUEST_TIMEOUT_MSEC, "watchdog", "requestTimeoutMsec");
-			client_.get(uri_)
-				.handler(resGet -> {
+			client_.get(uri_,resGet -> {
 					if (log.isDebugEnabled()) log.debug("status : " + resGet.statusCode());
 					if (resGet.statusCode() == 200) {
 						completionHandler.handle(Future.succeededFuture());
@@ -203,12 +202,9 @@ public class WatchdogRestarting extends AbstractVerticle {
 							completionHandler.handle(Future.failedFuture("http get failed : " + resGet.statusCode() + " : " + resGet.statusMessage() + " : " + t));
 						});
 					}
-				})
-				.setTimeout(requestTimeoutMsec)
-				.exceptionHandler(t -> {
+				}).setTimeout(requestTimeoutMsec).exceptionHandler(t -> {
 					completionHandler.handle(Future.failedFuture(t));
-				})
-				.end();
+				}).end();
 		}
 	}
 
