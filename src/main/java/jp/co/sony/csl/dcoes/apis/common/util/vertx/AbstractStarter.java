@@ -2,12 +2,11 @@ package jp.co.sony.csl.dcoes.apis.common.util.vertx;
 
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.AsyncResult;
-import io.vertx.core.Closeable;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
-import io.vertx.core.impl.VertxImpl;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import io.vertx.core.Promise;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import io.vertx.core.shareddata.AsyncMap;
 import jp.co.sony.csl.dcoes.apis.common.ServiceAddress;
 import jp.co.sony.csl.dcoes.apis.common.util.JulUtil;
@@ -41,7 +40,7 @@ public abstract class AbstractStarter extends AbstractVerticle {
 	 * @param startFuture {@inheritDoc}
 	 * @throws Exception {@inheritDoc}
 	 */
-	@Override public void start(Future<Void> startFuture) throws Exception {
+	@Override public void start(Promise<Void> startPromise) throws Exception {
 		init_(resInit -> {
 			if (resInit.succeeded()) {
 				startShutdownAllService_(resShutdownAll -> {
@@ -54,33 +53,33 @@ public abstract class AbstractStarter extends AbstractVerticle {
 											if (resWatchdogRestarting.succeeded()) {
 												doStart(resDoStart -> {
 													if (resDoStart.succeeded()) {
-														if (log.isInfoEnabled()) log.info("APIS version : " + AbstractStarter.APIS_VERSION);
-														if (log.isInfoEnabled()) log.info("communityId  : " + VertxConfig.communityId());
-														if (log.isInfoEnabled()) log.info("clusterId    : " + VertxConfig.clusterId());
-														if (log.isTraceEnabled()) log.trace("started : " + deploymentID());
-														startFuture.complete();
-													} else {
-														startFuture.fail(resDoStart.cause());
+													if (log.isInfoEnabled()) log.info("APIS version : " + AbstractStarter.APIS_VERSION);
+													if (log.isInfoEnabled()) log.info("communityId  : " + VertxConfig.communityId());
+													if (log.isInfoEnabled()) log.info("clusterId    : " + VertxConfig.clusterId());
+													if (log.isTraceEnabled()) log.trace("started : " + deploymentID());
+													startPromise.complete();
+												} else {
+													startPromise.fail(resDoStart.cause());
 													}
-												});
-											} else {
-												startFuture.fail(resWatchdogRestarting.cause());
+										});
+									} else {
+										startPromise.fail(resWatchdogRestarting.cause());
 											}
 										});
 									} else {
-										startFuture.fail(resMulticastLogHandlerLevel.cause());
+										startPromise.fail(resMulticastLogHandlerLevel.cause());
 									}
 								});
 							} else {
-								startFuture.fail(resShutdownLocal.cause());
+								startPromise.fail(resShutdownLocal.cause());
 							}
 						});
 					} else {
-						startFuture.fail(resShutdownAll.cause());
+						startPromise.fail(resShutdownAll.cause());
 					}
 				});
 			} else {
-				startFuture.fail(resInit.cause());
+				startPromise.fail(resInit.cause());
 			}
 		});
 	}
@@ -95,15 +94,15 @@ public abstract class AbstractStarter extends AbstractVerticle {
 	 * @param stopFuture {@inheritDoc}
 	 * @throws Exception {@inheritDoc}
 	 */
-	@Override public void stop(Future<Void> stopFuture) throws Exception {
+	@Override public void stop(Promise<Void> stopPromise) throws Exception {
 		doStop(resDoStop -> {
 			if (resDoStop.succeeded()) {
 				// nop
 			} else {
-				log.error(resDoStop.cause());
+				log.error("stop failed", resDoStop.cause());
 			}
 			if (log.isTraceEnabled()) log.trace("stopped : " + deploymentID());
-			stopFuture.complete();
+			stopPromise.complete();
 		});
 	}
 
@@ -116,7 +115,8 @@ public abstract class AbstractStarter extends AbstractVerticle {
 	 * @param completionHandler the completion handler
 	 */
 	private void init_(Handler<AsyncResult<Void>> completionHandler) {
-		initCloseHook_();
+		// Note: Vert.x 4 removed addCloseHook() internal API
+		// Cleanup is now handled via stop() lifecycle method
 		vertx.exceptionHandler(t -> {
 			handleUnhandledException(t);
 		});
@@ -125,33 +125,6 @@ public abstract class AbstractStarter extends AbstractVerticle {
 		} else {
 			completionHandler.handle(Future.succeededFuture());
 		}
-	}
-	/**
-	 * Registers process to be called when vertx instance ends.
-	 * The purpose is to execute APIS stop process ( {@link #doShutdown(Handler)} ) even when the process is dropped by a signal.
-	 * vertx インスタンスの終了時に呼ばれる処理を登録する.
-	 * シグナルでプロセスが落とされる場合にも APIS の停止処理 ( {@link #doShutdown(Handler)} ) を実行するため.
-	 */
-	private void initCloseHook_() {
-		((VertxImpl) vertx).addCloseHook(new Closeable() {
-			@Override public void close(Handler<AsyncResult<Void>> completionHandler) {
-				String msg = "Vert.x close hook invoked";
-				if (log.isInfoEnabled()) log.info(msg);
-				System.out.println(msg);
-				doShutdown(r -> {
-					if (r.succeeded()) {
-						String msg2 = "done";
-						if (log.isInfoEnabled()) log.info(msg2);
-						System.out.println(msg2);
-					} else {
-						log.error(r.cause());
-						System.err.println(r.cause());
-					}
-					completionHandler.handle(r);
-				});
-			}
-		});
-		if (log.isInfoEnabled()) log.info("Vert.x close hook initialized");
 	}
 	private static final String MAP_NAME = AbstractStarter.class.getName();
 	private static final String MAP_KEY_APIS_VERSION = "apisVersion";
@@ -231,7 +204,7 @@ public abstract class AbstractStarter extends AbstractVerticle {
 				JulUtil.setRootMulticastHandlerLevel(req.body());
 				req.reply("ok");
 			} catch (Exception e) {
-				log.error(e);
+				log.error("Failed to set multicast log level", e);
 				req.fail(-1, e.getMessage());
 			}
 		}).completionHandler(completionHandler);
@@ -305,7 +278,7 @@ public abstract class AbstractStarter extends AbstractVerticle {
 			if (resDoShutdown.succeeded()) {
 				// nop
 			} else {
-				log.error(resDoShutdown.cause());
+				log.error("Shutdown failed", resDoShutdown.cause());
 			}
 			if (log.isInfoEnabled()) log.info("closing Vert.x ...");
 			vertx.close();

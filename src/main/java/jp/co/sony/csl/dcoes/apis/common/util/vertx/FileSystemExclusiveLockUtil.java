@@ -4,9 +4,10 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
@@ -104,7 +105,7 @@ public class FileSystemExclusiveLockUtil {
 						completionHandler.handle(resAcquireLock);
 					});
 				} else {
-					log.error(resExclusiveLock);
+					log.error("Failed to acquire exclusive lock", resExclusiveLock.cause());
 					completionHandler.handle(Future.failedFuture(resExclusiveLock.cause()));
 				}
 			});
@@ -142,7 +143,7 @@ public class FileSystemExclusiveLockUtil {
 						completionHandler.handle(resReleaseLock);
 					});
 				} else {
-					log.error(resExclusiveLock);
+					log.error("Failed to acquire exclusive lock for unlock", resExclusiveLock.cause());
 					completionHandler.handle(Future.failedFuture(resExclusiveLock.cause()));
 				}
 			});
@@ -172,7 +173,7 @@ public class FileSystemExclusiveLockUtil {
 						completionHandler.handle(resCheckLock);
 					});
 				} else {
-					log.error(resExclusiveLock);
+					log.error("Failed to acquire exclusive lock for check", resExclusiveLock.cause());
 					completionHandler.handle(Future.failedFuture(resExclusiveLock.cause()));
 				}
 			});
@@ -199,7 +200,7 @@ public class FileSystemExclusiveLockUtil {
 					completionHandler.handle(resReetLock);
 				});
 			} else {
-				log.error(resExclusiveLock);
+				log.error("Failed to acquire exclusive lock for reset", resExclusiveLock.cause());
 				completionHandler.handle(Future.failedFuture(resExclusiveLock.cause()));
 			}
 		});
@@ -247,7 +248,7 @@ public class FileSystemExclusiveLockUtil {
 					try {
 						lock = channel.tryLock();
 					} catch (Exception e) {
-						log.error(e);
+						log.error("Failed to acquire lock on file", e);
 						completionHandler.handle(Future.failedFuture(e));
 						return;
 					}
@@ -289,7 +290,7 @@ public class FileSystemExclusiveLockUtil {
 					try {
 						newChannel = FileChannel.open(path, StandardOpenOption.WRITE, StandardOpenOption.SPARSE);
 					} catch (Exception e) {
-						log.error(e);
+						log.error("Failed to open file channel", e);
 						completionHandler.handle(Future.failedFuture(e));
 						return;
 					}
@@ -343,7 +344,7 @@ public class FileSystemExclusiveLockUtil {
 									// → 成功
 									completionHandler.handle(Future.succeededFuture(Paths.get(path)));
 								} else {
-									log.error(resChmod.cause());
+									log.error("Failed to change file permissions", resChmod.cause());
 									completionHandler.handle(Future.failedFuture(resChmod.cause()));
 								}
 							});
@@ -359,11 +360,11 @@ public class FileSystemExclusiveLockUtil {
 									} else {
 										// → File does not exist after all → Error
 										// → やっぱりなかった → エラー
-										log.error(resCreate.cause());
+										log.error("Failed to create file", resCreate.cause());
 										completionHandler.handle(Future.failedFuture(resCreate.cause()));
 									}
 								} else {
-									log.error(resExistsAgain.cause());
+									log.error("Failed to re-check file existence", resExistsAgain.cause());
 									completionHandler.handle(Future.failedFuture(resExistsAgain.cause()));
 								}
 							});
@@ -371,7 +372,7 @@ public class FileSystemExclusiveLockUtil {
 					});
 				}
 			} else {
-				log.error(resExists.cause());
+				log.error("Failed to check file existence", resExists.cause());
 				completionHandler.handle(Future.failedFuture(resExists.cause()));
 			}
 		});
@@ -404,7 +405,7 @@ public class FileSystemExclusiveLockUtil {
 				lock.release();
 			} catch (Exception e) {
 				locks_.put(name, lock);
-				log.error(e);
+				log.error("Failed to release file lock", e);
 				completionHandler.handle(Future.failedFuture(e));
 				return;
 			}
@@ -415,7 +416,7 @@ public class FileSystemExclusiveLockUtil {
 					channel.close();
 				} catch (Exception e) {
 					channels_.put(name, channel);
-					log.error(e);
+					log.error("Failed to close file channel", e);
 					completionHandler.handle(Future.failedFuture(e));
 					return;
 				}
@@ -467,11 +468,17 @@ public class FileSystemExclusiveLockUtil {
 		if (log.isDebugEnabled()) log.debug("resetting locks...");
 		@SuppressWarnings("rawtypes") List<Future> releaseFutures = new ArrayList<>();
 		for (String aName : locks_.keySet()) {
-			Future<Boolean> aFuture = Future.future();
-			releaseLock_(vertx, aName, true, aFuture);
-			releaseFutures.add(aFuture);
+			Promise<Boolean> promise = Promise.promise();
+			releaseLock_(vertx, aName, true, r -> {
+				if (r.succeeded()) {
+					promise.complete(r.result());
+				} else {
+					promise.fail(r.cause());
+				}
+			});
+			releaseFutures.add(promise.future());
 		}
-		CompositeFuture.all(releaseFutures).setHandler(ar -> {
+		CompositeFuture.all(releaseFutures).onComplete(ar -> {
 			if (ar.succeeded()) {
 				completionHandler.handle(Future.succeededFuture());
 			} else {

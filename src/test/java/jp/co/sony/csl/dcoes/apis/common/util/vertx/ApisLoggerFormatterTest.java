@@ -7,7 +7,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.VertxLoggerFormatter;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 
@@ -18,14 +17,16 @@ public class ApisLoggerFormatterTest {
 		super();
 	}
 
-	private static final VertxLoggerFormatter BASE_ = new VertxLoggerFormatter();
-
 	@Test public void nullProgramId(TestContext context) {
 		VertxConfig.config.setJsonObject(null);
 		LogRecord record = new LogRecord(Level.INFO, "test message");
 		record.setLoggerName("testLogger");
 		String result = new ApisLoggerFormatter().format(record);
-		context.assertEquals("[[[]]] " + BASE_.format(record), result);
+		// Format: [[[programId]]] timestamp LEVEL loggerName : message
+		context.assertTrue(result.startsWith("[[[]]]"), "Should start with [[[]]]");
+		context.assertTrue(result.contains("INFO"), "Should contain INFO level");
+		context.assertTrue(result.contains("testLogger"), "Should contain logger name");
+		context.assertTrue(result.contains("test message"), "Should contain message");
 	}
 
 	@Test public void emptyProgramId(TestContext context) {
@@ -33,7 +34,11 @@ public class ApisLoggerFormatterTest {
 		LogRecord record = new LogRecord(Level.INFO, "test message");
 		record.setLoggerName("testLogger");
 		String result = new ApisLoggerFormatter().format(record);
-		context.assertEquals("[[[]]] " + BASE_.format(record), result);
+		// Format: [[[programId]]] timestamp LEVEL loggerName : message
+		context.assertTrue(result.startsWith("[[[]]]"), "Should start with [[[]]]");
+		context.assertTrue(result.contains("INFO"), "Should contain INFO level");
+		context.assertTrue(result.contains("testLogger"), "Should contain logger name");
+		context.assertTrue(result.contains("test message"), "Should contain message");
 	}
 
 	@Test public void normalProgramId(TestContext context) {
@@ -41,7 +46,11 @@ public class ApisLoggerFormatterTest {
 		LogRecord record = new LogRecord(Level.INFO, "test message");
 		record.setLoggerName("testLogger");
 		String result = new ApisLoggerFormatter().format(record);
-		context.assertEquals("[[[apis-log]]] " + BASE_.format(record), result);
+		// Format: [[[programId]]] timestamp LEVEL loggerName : message
+		context.assertTrue(result.startsWith("[[[apis-log]]]"), "Should start with [[[apis-log]]]");
+		context.assertTrue(result.contains("INFO"), "Should contain INFO level");
+		context.assertTrue(result.contains("testLogger"), "Should contain logger name");
+		context.assertTrue(result.contains("test message"), "Should contain message");
 	}
 
 }

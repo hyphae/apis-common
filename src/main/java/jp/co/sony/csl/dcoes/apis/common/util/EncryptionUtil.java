@@ -3,8 +3,8 @@ package jp.co.sony.csl.dcoes.apis.common.util;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
@@ -80,7 +80,7 @@ public class EncryptionUtil {
 			DEFAULT_KEY = generateKey(defaultSeed);
 			DEFAULT_ALGORITHM_PARAMETER_SPEC = generateIv(defaultSeed);
 		} catch (Exception e) {
-			log.error(e);
+			log.error("Encryption initialization failed", e);
 			completionHandler.handle(Future.failedFuture(e));
 			return;
 		}

@@ -3,11 +3,10 @@ package jp.co.sony.csl.dcoes.apis.common.util.vertx;
 import io.vertx.core.Launcher;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
-import io.vertx.core.file.impl.FileResolver;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import io.vertx.core.net.PemKeyCertOptions;
 
 import java.io.File;
@@ -149,8 +148,9 @@ public class ApisLauncher extends Launcher {
 		String tmpdir = System.getProperty("java.io.tmpdir", ".");
 		String name = System.getProperty("user.name", "unknown");
 		String base = tmpdir + File.separator + "vertx-cache." + name;
-		if (log.isDebugEnabled()) log.debug(FileResolver.CACHE_DIR_BASE_PROP_NAME + " : " + base);
-		System.setProperty(FileResolver.CACHE_DIR_BASE_PROP_NAME, base);
+		String cacheDirBasePropName = "vertx.cacheDirBase";
+		if (log.isDebugEnabled()) log.debug(cacheDirBasePropName + " : " + base);
+		System.setProperty(cacheDirBasePropName, base);
 	}
 
 	/**
@@ -253,7 +253,7 @@ public class ApisLauncher extends Launcher {
 			try {
 				return EncryptionUtil.decrypt((String) v);
 			} catch (Exception e) {
-				log.error(e);
+				log.error("String decryption failed: " + v, e);
 				throw new RuntimeException("string decryption failed : " + v, e);
 			}
 		} else if (v instanceof JsonObject) {
@@ -292,7 +292,7 @@ public class ApisLauncher extends Launcher {
 					if (log.isDebugEnabled()) log.debug("file decrypted : " + decryptedFilename);
 					decryptedPaths_.add(decryptedPath);
 				} catch (Exception e) {
-					log.error(e);
+					log.error("File decryption failed: " + encryptedFilename, e);
 					throw new RuntimeException("file decryption failed : " + encryptedFilename, e);
 				}
 			});
@@ -319,7 +319,7 @@ public class ApisLauncher extends Launcher {
 					if (log.isDebugEnabled()) log.debug("no such file : " + decryptedPath);
 				}
 			} catch (Exception e) {
-				log.error(e);
+				log.error("File deletion failed: " + decryptedPath, e);
 				throw new RuntimeException("file deletion failed : " + decryptedPath, e);
 			}
 		}
