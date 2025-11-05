@@ -13,6 +13,8 @@ import io.vertx.core.http.HttpClientResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.concurrent.TimeUnit;
+
 /**
  * This is the default implementation for restarting WatchDog.
  * Simply executes HTTP GET for specified URL.
@@ -197,10 +199,8 @@ public class WatchdogRestarting extends AbstractVerticle {
 		Long requestTimeoutMsec = VertxConfig.config.getLong(DEFAULT_REQUEST_TIMEOUT_MSEC, "watchdog", "requestTimeoutMsec");
 		// Use Vert.x 4 HttpClient API
 		client_.request(HttpMethod.GET, uri_)
-			.compose(req -> {
-				req.setTimeout(requestTimeoutMsec);
-				return req.send();
-			})
+			.compose(req -> req.send())
+			.timeout(requestTimeoutMsec.longValue(), TimeUnit.MILLISECONDS)
 			.onComplete(ar -> {
 				if (ar.succeeded()) {
 					HttpClientResponse response = ar.result();

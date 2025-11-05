@@ -520,11 +520,14 @@ public class EncryptedClusterWideMapUtil {
 					});
 				futures.add(decrPromise.future());
 			}
-			CompositeFuture.all(futures).onComplete(ar -> {
+			@SuppressWarnings({"rawtypes", "unchecked"})
+			List<? extends Future<?>> typedFutures = (List<? extends Future<?>>) (List) futures;
+			Future.all(typedFutures).onComplete(ar -> {
 					if (ar.succeeded()) {
-						List<V> result = new ArrayList<>(ar.result().size());
-						for (int i = ar.result().size(); 0 < i--;) {
-							result.add(ar.result().resultAt(i));
+						CompositeFuture composite = ar.result();
+						List<V> result = new ArrayList<>(composite.size());
+						for (int i = composite.size(); 0 < i--;) {
+							result.add(composite.resultAt(i));
 						}
 						promise.complete(result);
 					} else {
@@ -560,11 +563,14 @@ public class EncryptedClusterWideMapUtil {
 					});
 				futures.add(decrPromise.future());
 			}
-			CompositeFuture.all(futures).onComplete(ar -> {
+			@SuppressWarnings({"rawtypes", "unchecked"})
+			List<? extends Future<?>> typedFutures = (List<? extends Future<?>>) (List) futures;
+			Future.all(typedFutures).onComplete(ar -> {
 					if (ar.succeeded()) {
-						Map<K, V> result = new HashMap<>(ar.result().size());
-						for (int i = ar.result().size(); 0 < i--;) {
-							result.put(keys.get(i), ar.result().resultAt(i));
+						CompositeFuture composite = ar.result();
+						Map<K, V> result = new HashMap<>(composite.size());
+						for (int i = composite.size(); 0 < i--;) {
+							result.put(keys.get(i), composite.resultAt(i));
 						}
 						promise.complete(result);
 					} else {

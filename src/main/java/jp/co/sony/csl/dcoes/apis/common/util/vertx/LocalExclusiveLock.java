@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.PriorityQueue;
 import java.util.Queue;
+import java.util.concurrent.Callable;
 
 import jp.co.sony.csl.dcoes.apis.common.util.StackTraceUtil;
 
@@ -94,7 +95,7 @@ public class LocalExclusiveLock {
 	 */
 	public void acquire(Vertx vertx, boolean privileged, Handler<AsyncResult<Lock>> completionHandler) {
 		Entry_ entry = new Entry_(privileged, vertx.getOrCreateContext(), completionHandler);
-		vertx.<Entry_>executeBlocking(promise -> {
+		vertx.executeBlocking((Callable<Entry_>) () -> {
 			synchronized (queue_) { // Synchronizes by separating and processing threads
 									// スレッドを分けて処理し同期する
 				queue_.add(entry);
@@ -102,12 +103,12 @@ public class LocalExclusiveLock {
 					// If not in locked state, puts in locked state and retrieves and returns the first entry in queue
 					// ロック状態でなければロック状態にしキューの最初のエントリを取り出して返す
 					locked_ = true;
-					promise.complete(queue_.poll());
+					return queue_.poll();
 				} else {
 					// Does not return anything if already in locked state
 					// すでにロック状態なら何も返さない
 					if (log.isInfoEnabled()) log.info("local exclusive lock for " + name_ + " ; queue size : " + queue_.size());
-					promise.complete(null);
+					return null;
 				}
 			}
 		}).onComplete(res -> {
@@ -131,7 +132,7 @@ public class LocalExclusiveLock {
 	 */
 	public void reset(Vertx vertx) {
 		if (log.isInfoEnabled()) log.info("reset local exclusive lock for " + name_);
-		vertx.<Queue<Entry_>>executeBlocking(promise -> {
+		vertx.executeBlocking((Callable<Queue<Entry_>>) () -> {
 			synchronized (queue_) { // Synchronizes by separating and processing threads
 									// スレッドを分けて処理し同期する
 				// Copies the queue, empties original queue, releases lock state, and returns copied queue
@@ -139,7 +140,7 @@ public class LocalExclusiveLock {
 				Queue<Entry_> queue = new PriorityQueue<>(queue_);
 				queue_.clear();
 				locked_ = false;
-				promise.complete(queue);
+				return queue;
 			}
 		}).onComplete(res -> {
 			Queue<Entry_> queue = res.result();
@@ -280,26 +281,26 @@ public class LocalExclusiveLock {
 		 */
 	@Override public void release() {
 		vertx_.cancelTimer(timerId_);
-		vertx_.<Entry_>executeBlocking(promise -> {
+		vertx_.executeBlocking((Callable<Entry_>) () -> {
 			synchronized (queue_) { // Synchronizes by separating threads and processing
 									// スレッドを分けて処理し同期する
 				if (released_) {
 					// Release completed ( Measure if called multiple times due to bug on user's side) → Warns and ignores
 					// リリース済み ( 利用側のバグで複数回呼ばれた場合の対策 ) → 警告してスルー
 					if (log.isWarnEnabled()) log.warn("local exclusive lock for " + name_ + " ; already released");
-					promise.complete(null);
+					return null;
 				} else {
 					released_ = true;
 					if (!queue_.isEmpty()) {
 						// If there is an entry in the queue, puts it in lock state, retrieves the first entry in queues, and returns it.
 						// キューにエントリがあったらロック状態にしキューの最初のエントリを取り出して返す
 						locked_ = true;
-						promise.complete(queue_.poll());
+						return queue_.poll();
 					} else {
 						// If queue is empty, removes lock state and does not return anything
 						// キューが空ならロック状態を解除し何も返さない
 						locked_ = false;
-						promise.complete(null);
+						return null;
 					}
 				}
 			}

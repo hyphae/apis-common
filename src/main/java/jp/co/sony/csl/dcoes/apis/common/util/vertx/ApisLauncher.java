@@ -340,7 +340,8 @@ public class ApisLauncher extends Launcher {
 			String certFilePath = VertxConfig.securityPemCertFile();
 			if (log.isDebugEnabled()) log.debug("pem key file : " + keyFilePath);
 			if (log.isDebugEnabled()) log.debug("pem cert file : " + certFilePath);
-			options.getEventBusOptions().setSsl(true).setPemKeyCertOptions(new PemKeyCertOptions().addKeyPath(keyFilePath).addCertPath(certFilePath));
+			PemKeyCertOptions keyCertOptions = new PemKeyCertOptions().addKeyPath(keyFilePath).addCertPath(certFilePath);
+			options.getEventBusOptions().setSsl(true).setKeyCertOptions(keyCertOptions);
 		}
 	}
 

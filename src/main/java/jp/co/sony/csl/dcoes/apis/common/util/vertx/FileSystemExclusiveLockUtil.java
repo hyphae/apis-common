@@ -478,7 +478,9 @@ public class FileSystemExclusiveLockUtil {
 			});
 			releaseFutures.add(promise.future());
 		}
-		CompositeFuture.all(releaseFutures).onComplete(ar -> {
+		@SuppressWarnings({"rawtypes", "unchecked"})
+		List<? extends Future<?>> typedFutures = (List<? extends Future<?>>) (List) releaseFutures;
+		Future.all(typedFutures).onComplete(ar -> {
 			if (ar.succeeded()) {
 				completionHandler.handle(Future.succeededFuture());
 			} else {
