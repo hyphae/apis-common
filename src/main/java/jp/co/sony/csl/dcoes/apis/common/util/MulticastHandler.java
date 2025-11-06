@@ -123,7 +123,11 @@ public class MulticastHandler extends Handler {
 	private synchronized void connect_() throws IOException {
 		sendAddress = InetAddress.getByName(groupAddress);
 		sock = new MulticastSocket(port);
-		sock.joinGroup(sendAddress);
+		NetworkInterface networkInterface = findNonLoopbackMulticastInterface();
+		if (networkInterface == null) {
+			throw new IOException("No suitable network interface found for multicast");
+		}
+		sock.joinGroup(new InetSocketAddress(sendAddress, port), networkInterface);
 		sock.setTimeToLive(1);
 	}
 
