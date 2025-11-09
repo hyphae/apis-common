@@ -2,8 +2,8 @@ package jp.co.sony.csl.dcoes.apis.common;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import jp.co.sony.csl.dcoes.apis.common.util.StackTraceUtil;
 import jp.co.sony.csl.dcoes.apis.common.util.vertx.JsonObjectUtil;
 
@@ -143,7 +143,7 @@ public class Error {
 		try {
 			return Error.Category.valueOf(value);
 		} catch (Exception e) {
-			log.error(e);
+			log.error("Failed to parse category: " + value, e);
 			return Error.Category.UNKNOWN;
 		}
 	}
@@ -161,7 +161,7 @@ public class Error {
 		try {
 			return Error.Extent.valueOf(value);
 		} catch (Exception e) {
-			log.error(e);
+			log.error("Failed to parse extent: " + value, e);
 			return Error.Extent.UNKNOWN;
 		}
 	}
@@ -179,7 +179,7 @@ public class Error {
 		try {
 			return Error.Level.valueOf(value);
 		} catch (Exception e) {
-			log.error(e);
+			log.error("Failed to parse level: " + value, e);
 			return Error.Level.UNKNOWN;
 		}
 	}

@@ -1,7 +1,7 @@
 package jp.co.sony.csl.dcoes.apis.common.util;
 
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This is a trivial {@link Number} related tool.
@@ -46,11 +46,11 @@ public class NumberUtil {
 	 */
 	public static Integer toInteger(String value) {
 		if (value != null && !value.isEmpty()) {
-			try {
-				return Integer.valueOf(value);
-			} catch (Exception e) {
-				if (log.isWarnEnabled()) log.warn(e);
-			}
+		try {
+			return Integer.valueOf(value);
+		} catch (Exception e) {
+			if (log.isWarnEnabled()) log.warn("Failed to convert to integer: " + value, e);
+		}
 		}
 		return null;
 	}

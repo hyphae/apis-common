@@ -1,7 +1,7 @@
 package jp.co.sony.csl.dcoes.apis.common.util;
 
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -45,10 +45,10 @@ public class DateTimeUtil {
 			int pos = value.indexOf('.');
 			if (-1 != pos) value = value.substring(0, pos);
 			try {
-				return LocalDateTime.parse(value, LocalDateTimeFormatter_);
-			} catch (Exception e) {
-				if (log.isWarnEnabled()) log.warn(e);
-			}
+			return LocalDateTime.parse(value, LocalDateTimeFormatter_);
+		} catch (Exception e) {
+			if (log.isWarnEnabled()) log.warn("Failed to parse datetime: " + value, e);
+		}
 		}
 		return null;
 	}

@@ -6,8 +6,8 @@ import io.vertx.core.Handler;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -40,7 +40,7 @@ public class JsonObjectUtil {
 		try {
 			result = new JsonObject(value);
 		} catch (Exception e) {
-			if (log.isWarnEnabled()) log.warn(e);
+			if (log.isWarnEnabled()) log.warn("Failed to parse JsonObject from string", e);
 			completionHandler.handle(Future.failedFuture(e));
 			return;
 		}
@@ -59,7 +59,7 @@ public class JsonObjectUtil {
 		try {
 			result = new JsonObject(value);
 		} catch (Exception e) {
-			if (log.isWarnEnabled()) log.warn(e);
+			if (log.isWarnEnabled()) log.warn("Failed to parse JsonObject from Buffer", e);
 			completionHandler.handle(Future.failedFuture(e));
 			return;
 		}
@@ -79,7 +79,7 @@ public class JsonObjectUtil {
 		try {
 			result = new JsonArray(value);
 		} catch (Exception e) {
-			if (log.isWarnEnabled()) log.warn(e);
+			if (log.isWarnEnabled()) log.warn("Failed to parse JsonArray from string", e);
 			completionHandler.handle(Future.failedFuture(e));
 			return;
 		}
@@ -98,7 +98,7 @@ public class JsonObjectUtil {
 		try {
 			result = new JsonArray(value);
 		} catch (Exception e) {
-			if (log.isWarnEnabled()) log.warn(e);
+			if (log.isWarnEnabled()) log.warn("Failed to parse JsonArray from Buffer", e);
 			completionHandler.handle(Future.failedFuture(e));
 			return;
 		}

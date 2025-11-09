@@ -1,7 +1,7 @@
 package jp.co.sony.csl.dcoes.apis.common.util;
 
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.UnsupportedEncodingException;
@@ -78,7 +78,7 @@ public class StringUtil {
 			try {
 				return URLEncoder.encode(value, "UTF-8");
 			} catch (UnsupportedEncodingException e) {
-				log.error(e);
+				log.error("URL encoding failed", e);
 			}
 		}
 		return value;

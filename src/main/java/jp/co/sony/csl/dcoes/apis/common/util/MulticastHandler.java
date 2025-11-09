@@ -4,7 +4,11 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.MulticastSocket;
+import java.net.NetworkInterface;
+import java.net.SocketException;
+import java.util.Enumeration;
 import java.util.logging.ErrorManager;
 import java.util.logging.Handler;
 import java.util.logging.Level;
@@ -123,12 +127,39 @@ public class MulticastHandler extends Handler {
 	private synchronized void connect_() throws IOException {
 		sendAddress = InetAddress.getByName(groupAddress);
 		sock = new MulticastSocket(port);
-		NetworkInterface networkInterface = findNonLoopbackMulticastInterface();
-		if (networkInterface == null) {
-			throw new IOException("No suitable network interface found for multicast");
+		NetworkInterface networkInterface;
+		try {
+			networkInterface = findNonLoopbackMulticastInterface();
+			if (networkInterface == null) {
+				throw new IOException("No suitable network interface found for multicast");
+			}
+		} catch (SocketException e) {
+			throw new IOException("Failed to find network interface for multicast", e);
 		}
 		sock.joinGroup(new InetSocketAddress(sendAddress, port), networkInterface);
 		sock.setTimeToLive(1);
+	}
+
+	/**
+	 * Finds a suitable non-loopback network interface for multicast.
+	 * @return NetworkInterface suitable for multicast, or null if none found
+	 * マルチキャストに適した非ループバックネットワークインターフェースを探す.
+	 * @return マルチキャストに適した NetworkInterface、見つからない場合は null
+	 */
+	private NetworkInterface findNonLoopbackMulticastInterface() throws SocketException {
+		Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
+		while (interfaces.hasMoreElements()) {
+			NetworkInterface networkInterface = interfaces.nextElement();
+			try {
+				if (networkInterface.isUp() && !networkInterface.isLoopback() && networkInterface.supportsMulticast()) {
+					return networkInterface;
+				}
+			} catch (SocketException e) {
+				// Skip this interface if we can't determine its state
+				continue;
+			}
+		}
+		return null;
 	}
 
 	/**

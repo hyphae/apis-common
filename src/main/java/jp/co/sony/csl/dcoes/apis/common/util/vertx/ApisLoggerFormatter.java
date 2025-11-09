@@ -1,7 +1,6 @@
 package jp.co.sony.csl.dcoes.apis.common.util.vertx;
 
-import io.vertx.core.logging.VertxLoggerFormatter;
-
+import java.util.logging.Formatter;
 import java.util.logging.LogRecord;
 
 /**
@@ -14,21 +13,52 @@ import java.util.logging.LogRecord;
  * {@link jp.co.sony.csl.dcoes.apis.tools.log.util.ApisVertxLogParser} でパースされる.
  * @author OES Project
  */
-public class ApisLoggerFormatter extends VertxLoggerFormatter {
+public class ApisLoggerFormatter extends Formatter {
 
 	private String PROGRAM_ID_ = null;
 
 	/**
-	 * Adds {@link #programId() program identification string} to parent class {@link VertxLoggerFormatter#format(LogRecord) result} and outputs.
+	 * Adds {@link #programId() program identification string} to standard format output.
 	 * @param record {@inheritDoc}
 	 * @return {@inheritDoc}
-	 * 親クラスの {@link VertxLoggerFormatter#format(LogRecord) 結果} に {@link #programId() プログラム識別文字列} を追加して出力する.
+	 * 標準フォーマットに {@link #programId() プログラム識別文字列} を追加して出力する.
 	 * @param record {@inheritDoc}
 	 * @return {@inheritDoc}
 	 */
 	@Override public String format(final LogRecord record) {
-		String result = super.format(record);
+		String result = formatRecord(record);
 		return "[[[" + programId() + "]]] " + result;
+	}
+
+	/**
+	 * Formats a LogRecord into a string.
+	 * Uses default Java logging format with timestamp, level, logger name, and message.
+	 * @param record {@inheritDoc}
+	 * @return formatted log string
+	 */
+	private String formatRecord(LogRecord record) {
+		StringBuilder sb = new StringBuilder();
+		sb.append(record.getMillis()).append(' ');
+		sb.append(record.getLevel().getName()).append(' ');
+		sb.append(record.getLoggerName()).append(" : ");
+		sb.append(record.getMessage());
+		if (record.getThrown() != null) {
+			sb.append("\n").append(getStackTrace(record.getThrown()));
+		}
+		sb.append('\n');
+		return sb.toString();
+	}
+
+	/**
+	 * Gets stack trace string from Throwable.
+	 * @param t throwable
+	 * @return stack trace string
+	 */
+	private String getStackTrace(Throwable t) {
+		java.io.StringWriter sw = new java.io.StringWriter();
+		java.io.PrintWriter pw = new java.io.PrintWriter(sw);
+		t.printStackTrace(pw);
+		return sw.toString();
 	}
 
 	/**

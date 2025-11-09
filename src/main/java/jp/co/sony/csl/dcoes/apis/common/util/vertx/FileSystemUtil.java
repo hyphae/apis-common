@@ -4,8 +4,8 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Implements file system utility.
@@ -57,11 +57,11 @@ public class FileSystemUtil {
 									} else {
 										// → File does not exist after all → Error
 										// → やっぱりなかった → エラー
-										log.error(resMkdirs.cause());
+										log.error("Failed to create directory", resMkdirs.cause());
 										completionHandler.handle(Future.failedFuture(resMkdirs.cause()));
 									}
 								} else {
-									log.error(resExistsAgain.cause());
+									log.error("Failed to re-check directory existence", resExistsAgain.cause());
 									completionHandler.handle(Future.failedFuture(resExistsAgain.cause()));
 								}
 							});
@@ -69,7 +69,7 @@ public class FileSystemUtil {
 					});
 				}
 			} else {
-				log.error(resExists.cause());
+				log.error("Failed to check directory existence", resExists.cause());
 				completionHandler.handle(Future.failedFuture(resExists.cause()));
 			}
 		});
