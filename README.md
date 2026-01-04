@@ -1,4 +1,6 @@
 # apis-common
+[![OpenSSF Scorecard](https://www.bestpractices.dev/projects/9993/badge)](https://www.bestpractices.dev/en/projects/9993/passing)
+
 Common source code for building apis-main, apis-web, apis-ccc and apis-log.
 
 ## API Specification  
