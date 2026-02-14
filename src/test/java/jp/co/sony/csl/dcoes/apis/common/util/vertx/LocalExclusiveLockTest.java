@@ -25,7 +25,9 @@ public class LocalExclusiveLockTest {
 		vertx = Vertx.vertx();
 	}
 	@After public void after(TestContext context) {
-		vertx.close();
+		if (vertx != null) {
+			vertx.close(context.asyncAssertSuccess());
+		}
 	}
 
 	@Test public void releaseTwice(TestContext context) {
@@ -116,10 +118,10 @@ public class LocalExclusiveLockTest {
 			if (res.succeeded()) {
 				LocalExclusiveLock.Lock result = res.result();
 				System.out.println("lock acquired");
-				vertx.setTimer(13000L, v -> {
+				vertx.setTimer(200L, v -> {
 					result.release();
 					System.out.println("lock released");
-					vertx.setTimer(5000L, vv -> {
+					vertx.setTimer(100L, vv -> {
 						System.out.println("done");
 						async.complete();
 					});

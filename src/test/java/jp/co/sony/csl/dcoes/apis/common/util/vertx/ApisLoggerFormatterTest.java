@@ -3,6 +3,7 @@ package jp.co.sony.csl.dcoes.apis.common.util.vertx;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 
+import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -15,6 +16,10 @@ public class ApisLoggerFormatterTest {
 
 	public ApisLoggerFormatterTest() {
 		super();
+	}
+
+	@After public void after() {
+		VertxConfig.config.setJsonObject(null);
 	}
 
 	@Test public void nullProgramId(TestContext context) {
