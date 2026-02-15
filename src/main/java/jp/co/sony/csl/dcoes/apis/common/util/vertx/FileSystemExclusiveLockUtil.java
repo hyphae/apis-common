@@ -4,7 +4,7 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
-import io.vertx.core.Promise;
+
 import io.vertx.core.Vertx;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -468,7 +468,7 @@ public class FileSystemExclusiveLockUtil {
 		if (log.isDebugEnabled()) log.debug("resetting locks...");
 		@SuppressWarnings("rawtypes") List<Future> releaseFutures = new ArrayList<>();
 		for (String aName : locks_.keySet()) {
-			Promise<Boolean> promise = Promise.promise();
+			Future<Boolean> promise = Future.future();
 			releaseLock_(vertx, aName, true, r -> {
 				if (r.succeeded()) {
 					promise.complete(r.result());
@@ -476,11 +476,11 @@ public class FileSystemExclusiveLockUtil {
 					promise.fail(r.cause());
 				}
 			});
-			releaseFutures.add(promise.future());
+			releaseFutures.add(promise);
 		}
 		@SuppressWarnings({"rawtypes", "unchecked"})
-		List<? extends Future<?>> typedFutures = (List<? extends Future<?>>) (List) releaseFutures;
-		Future.all(typedFutures).onComplete(ar -> {
+		List<Future> typedFutures = (List<Future>) (List) releaseFutures;
+		CompositeFuture.all(typedFutures).setHandler(ar -> {
 			if (ar.succeeded()) {
 				completionHandler.handle(Future.succeededFuture());
 			} else {

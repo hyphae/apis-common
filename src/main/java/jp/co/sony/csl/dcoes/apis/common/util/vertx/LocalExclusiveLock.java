@@ -95,7 +95,7 @@ public class LocalExclusiveLock {
 	 */
 	public void acquire(Vertx vertx, boolean privileged, Handler<AsyncResult<Lock>> completionHandler) {
 		Entry_ entry = new Entry_(privileged, vertx.getOrCreateContext(), completionHandler);
-		vertx.executeBlocking((Callable<Entry_>) () -> {
+		vertx.executeBlocking(future -> {
 			synchronized (queue_) { // Synchronizes by separating and processing threads
 									// スレッドを分けて処理し同期する
 				queue_.add(entry);
@@ -103,23 +103,28 @@ public class LocalExclusiveLock {
 					// If not in locked state, puts in locked state and retrieves and returns the first entry in queue
 					// ロック状態でなければロック状態にしキューの最初のエントリを取り出して返す
 					locked_ = true;
-					return queue_.poll();
+					future.complete(queue_.poll());
 				} else {
 					// Does not return anything if already in locked state
 					// すでにロック状態なら何も返さない
 					if (log.isInfoEnabled()) log.info("local exclusive lock for " + name_ + " ; queue size : " + queue_.size());
-					return null;
+					future.complete(null);
 				}
 			}
-		}).onComplete(res -> {
-			Entry_ next = res.result();
-			if (next != null) {
-				// When the next entry is returned, creates new lock object and returns it -> Lock acquisition is successful
-				// 次のエントリが返ってきたら新しいロックオブジェクトを作って返す → ロック獲得成功
-				next.context_.runOnContext(v -> {
-					next.completionHandler_.handle(Future.succeededFuture(new Lock_(vertx, next.stackTrace_)));
-				});
-			}
+		}, res -> {
+			if (res.succeeded()) {
+				Entry_ next = (Entry_) res.result();
+				if (next != null) {
+					// When the next entry is returned, creates new lock object and returns it -> Lock acquisition is successful
+					// 次のエントリが返ってきたら新しいロックオブジェクトを作って返す → ロック獲得成功
+					next.context_.runOnContext(v -> {
+						next.completionHandler_.handle(Future.succeededFuture(new Lock_(vertx, next.stackTrace_)));
+					});
+				}
+			} else {
+				// Handle failure if needed, though executeBlocking usually succeeds unless exception
+                completionHandler.handle(Future.failedFuture(res.cause()));
+            }
 		});
 	}
 	/**
@@ -132,7 +137,7 @@ public class LocalExclusiveLock {
 	 */
 	public void reset(Vertx vertx) {
 		if (log.isInfoEnabled()) log.info("reset local exclusive lock for " + name_);
-		vertx.executeBlocking((Callable<Queue<Entry_>>) () -> {
+		vertx.executeBlocking(future -> {
 			synchronized (queue_) { // Synchronizes by separating and processing threads
 									// スレッドを分けて処理し同期する
 				// Copies the queue, empties original queue, releases lock state, and returns copied queue
@@ -140,18 +145,20 @@ public class LocalExclusiveLock {
 				Queue<Entry_> queue = new PriorityQueue<>(queue_);
 				queue_.clear();
 				locked_ = false;
-				return queue;
+				future.complete(queue);
 			}
-		}).onComplete(res -> {
-			Queue<Entry_> queue = res.result();
-			while (!queue.isEmpty()) {
-				// Fails when retrieving entries one by one from queue → Lock acquisition failed
-				// キューからエントリを一つずつ取り出し fail → ロック獲得失敗
-				Entry_ entry = queue.poll();
-				if (entry != null) {
-					entry.context_.runOnContext(v -> {
-						entry.completionHandler_.handle(Future.failedFuture("local exclusive lock for " + name_ + " ; reset"));
-					});
+		}, res -> {
+			if (res.succeeded()) {
+				Queue<Entry_> queue = (Queue<Entry_>) res.result();
+				while (!queue.isEmpty()) {
+					// Fails when retrieving entries one by one from queue → Lock acquisition failed
+					// キューからエントリを一つずつ取り出し fail → ロック獲得失敗
+					Entry_ entry = queue.poll();
+					if (entry != null) {
+						entry.context_.runOnContext(v -> {
+							entry.completionHandler_.handle(Future.failedFuture("local exclusive lock for " + name_ + " ; reset"));
+						});
+					}
 				}
 			}
 		});
@@ -281,38 +288,40 @@ public class LocalExclusiveLock {
 		 */
 	@Override public void release() {
 		vertx_.cancelTimer(timerId_);
-		vertx_.executeBlocking((Callable<Entry_>) () -> {
+		vertx_.executeBlocking(future -> {
 			synchronized (queue_) { // Synchronizes by separating threads and processing
 									// スレッドを分けて処理し同期する
 				if (released_) {
 					// Release completed ( Measure if called multiple times due to bug on user's side) → Warns and ignores
 					// リリース済み ( 利用側のバグで複数回呼ばれた場合の対策 ) → 警告してスルー
 					if (log.isWarnEnabled()) log.warn("local exclusive lock for " + name_ + " ; already released");
-					return null;
+					future.complete(null);
 				} else {
 					released_ = true;
 					if (!queue_.isEmpty()) {
 						// If there is an entry in the queue, puts it in lock state, retrieves the first entry in queues, and returns it.
 						// キューにエントリがあったらロック状態にしキューの最初のエントリを取り出して返す
 						locked_ = true;
-						return queue_.poll();
+						future.complete(queue_.poll());
 					} else {
 						// If queue is empty, removes lock state and does not return anything
 						// キューが空ならロック状態を解除し何も返さない
 						locked_ = false;
-						return null;
+						future.complete(null);
 					}
 				}
 			}
-		}).onComplete(res -> {
-			Entry_ next = res.result();
-			if (next != null) {
-				// When the next entry is returned, creates new lock object and returns it → Lock acquisition is successful
-				// 次のエントリが返ってきたら新しいロックオブジェクトを作って返す → ロック獲得成功
-				if (log.isInfoEnabled()) log.info("local exclusive lock for " + name_ + " ; queue size : " + queue_.size());
-				next.context_.runOnContext(v -> {
-					next.completionHandler_.handle(Future.succeededFuture(new Lock_(vertx_, next.stackTrace_)));
-				});
+		}, res -> {
+			if (res.succeeded()) {
+				Entry_ next = (Entry_) res.result();
+				if (next != null) {
+					// When the next entry is returned, creates new lock object and returns it → Lock acquisition is successful
+					// 次のエントリが返ってきたら新しいロックオブジェクトを作って返す → ロック獲得成功
+					if (log.isInfoEnabled()) log.info("local exclusive lock for " + name_ + " ; queue size : " + queue_.size());
+					next.context_.runOnContext(v -> {
+						next.completionHandler_.handle(Future.succeededFuture(new Lock_(vertx_, next.stackTrace_)));
+					});
+				}
 			}
 		});
 	}
