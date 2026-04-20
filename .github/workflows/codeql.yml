@@ -36,8 +36,18 @@ jobs:
           java-version: "11"
           cache: maven
 
+      - name: Checkout APIS BOM
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          repository: hyphae/apis-bom
+          path: apis-bom
+          persist-credentials: false
+
+      - name: Install APIS BOM locally
+        run: mvn -B -f apis-bom/pom.xml -DskipTests install
+
       - name: Build for CodeQL
-        run: mvn -B -Dapis.common.standalone.ci=true compile
+        run: mvn -B compile
 
       - name: Perform CodeQL analysis
         uses: github/codeql-action/analyze@95e58e9a2cdfd71adc6e0353d5c52f41a045d225 # v4.22.0
