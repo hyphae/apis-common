@@ -1,31 +1,13 @@
-// Copyright 2026 The APIS Common Authors
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
 
 import com.code_intelligence.jazzer.api.FuzzedDataProvider;
-
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-
 import jp.co.sony.csl.dcoes.apis.common.util.DateTimeUtil;
 import jp.co.sony.csl.dcoes.apis.common.util.NumberUtil;
 import jp.co.sony.csl.dcoes.apis.common.util.StringUtil;
 import jp.co.sony.csl.dcoes.apis.common.util.vertx.JsonObjectUtil;
 
-/**
- * Jazzer entry point for OSS-Fuzz / ClusterFuzzLite. Not on the Maven test classpath;
- * compiled only by {@code .clusterfuzzlite/build.sh} inside the fuzzing image.
- */
+
 public class ApisCommonFuzzer {
 	public static void fuzzerTestOneInput(FuzzedDataProvider data) {
 		switch (data.consumeInt(0, 5)) {

@@ -1,2 +1,2 @@
-# ClusterFuzzLite metadata (see https://google.github.io/clusterfuzzlite/build-integration/)
+# see https://google.github.io/clusterfuzzlite/build-integration/
 language: jvm
