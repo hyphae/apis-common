@@ -72,9 +72,9 @@ public class ApisCommonFuzzer {
 
 	private static void fuzzJsonObjectUtil(FuzzedDataProvider data) {
 		String raw = data.consumeString(8192);
-		final JsonObject jo;
+		final JsonObject jsonobject;
 		try {
-			jo = new JsonObject(raw);
+			jsonobject = new JsonObject(raw);
 		} catch (RuntimeException e) {
 			return;
 		}
@@ -84,15 +84,15 @@ public class ApisCommonFuzzer {
 			keys[i] = data.consumeString(64);
 		}
 		try {
-			JsonObjectUtil.getValue(jo, keys);
-			JsonObjectUtil.getString(jo, keys);
-			JsonObjectUtil.getFloat(jo, keys);
-			JsonObjectUtil.getInteger(jo, keys);
-			JsonObjectUtil.getLong(jo, keys);
-			JsonObjectUtil.getBoolean(jo, keys);
-			JsonObjectUtil.getLocalDateTime(jo, keys);
-			JsonObjectUtil.getJsonArray(jo, keys);
-			JsonObjectUtil.getJsonObject(jo, keys);
+			JsonObjectUtil.getValue(jsonobject, keys);
+			JsonObjectUtil.getString(jsonobject, keys);
+			JsonObjectUtil.getFloat(jsonobject, keys);
+			JsonObjectUtil.getInteger(jsonobject, keys);
+			JsonObjectUtil.getLong(jsonobject, keys);
+			JsonObjectUtil.getBoolean(jsonobject, keys);
+			JsonObjectUtil.getLocalDateTime(jsonobject, keys);
+			JsonObjectUtil.getJsonArray(jsonobject, keys);
+			JsonObjectUtil.getJsonObject(jsonobject, keys);
 		} catch (RuntimeException ignored) {
 		}
 	}
