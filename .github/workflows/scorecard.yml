@@ -13,6 +13,9 @@ on:
     - cron: '36 16 * * 3'
   push:
     branches: [ "main" ]
+  # Run on PRs so Code Scanning receives Scorecard SARIF for PR commits (required by branch protection).
+  pull_request:
+    branches: [ "main", "master" ]
 
 # Declare default permissions as read only.
 permissions: 
