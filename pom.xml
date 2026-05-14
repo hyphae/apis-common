@@ -3,12 +3,12 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <vertx.version>4.5.10</vertx.version>
+    <vertx.version>4.5.27</vertx.version>
   </properties>
 
   <groupId>jp.co.sony.csl.dcoes.apis</groupId>
   <artifactId>apis-common</artifactId>
-  <version>3.0.0</version>
+  <version>3.4.1</version>
 
   <name>APIS COMMON</name>
 
@@ -40,7 +40,7 @@
     <dependency>
       <groupId>ch.qos.logback</groupId>
       <artifactId>logback-classic</artifactId>
-      <version>1.4.11</version>
+      <version>1.5.25</version>
     </dependency>
     <dependency>
       <groupId>io.vertx</groupId>
