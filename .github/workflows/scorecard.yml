@@ -15,7 +15,7 @@ on:
     branches: [ "main" ]
   # Run on PRs so Code Scanning receives Scorecard SARIF for PR commits (required by branch protection).
   pull_request:
-    branches: [ "main", "master" ]
+    branches: [ "main" ]
 
 # Declare default permissions as read only.
 permissions: 
