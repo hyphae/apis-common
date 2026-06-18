@@ -24,10 +24,10 @@ import jp.co.sony.csl.dcoes.apis.common.util.EncryptionUtil;
 /**
  * This is the common startup class for APIS programs.
  * It carries out tricks around encryption. 
- * It is specified by maven-shade-plugin's {@literal <Main-Verticle>} in pom.xml.
+ * It is specified in build.gradle.kts.
  * APIS プログラム共通の起動クラス.
  * 暗号化まわりの細工をするため.
- * pom.xml の maven-shade-plugin の {@literal <Main-Class>} で指定してある.
+ * build.gradle.kts で指定してある.
  * @author OES Project
  */
 public class ApisLauncher extends Launcher {

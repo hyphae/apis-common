@@ -6,3 +6,5 @@ build
 .classpath
 .project
 .settings
+.gradle
+!gradle/wrapper/gradle-wrapper.jar

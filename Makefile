@@ -1,6 +1,13 @@
 
-install:
-	mvn install
+build:
+	./gradlew build
 
 clean:
-	mvn clean
+	./gradlew clean && rm -rf build
+
+install:
+	./gradlew publishToMavenLocal
+
+doc:
+	./gradlew javadoc
+	

@@ -12,10 +12,10 @@ An example of creating an API specification using the Javadoc command is shown b
 ```bash  
 $ export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64/  
 $ cd apis-common  
-$ mvn javadoc:javadoc  
+$ ./gradlew javadoc
 ```  
 
-The API specification is created in apis-common/target/site/apidocs/.  
+The API specification is created in apis-common/build/docs/javadoc/.  
 
 ## License
 &emsp;[Apache License Version 2.0](https://github.com/hyphae/apis-common/blob/master/LICENSE)
