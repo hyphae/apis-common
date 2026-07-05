@@ -85,4 +85,15 @@ public class VertxConfig {
 		return config.getString("security", "pemCertFile");
 	}
 
+
+
+/**
+     * Reads path of api key for validating API-REQUESTS from CONFIG.
+     * @return path of api key
+     * CONFIG から API リクエストの検証に使用する API キーのパスを読み込む。
+     * @return API キーのパス
+     */
+public static String apiServerApiKey(){
+	return config.getString("apiServer","apiKey")
+}
 }
