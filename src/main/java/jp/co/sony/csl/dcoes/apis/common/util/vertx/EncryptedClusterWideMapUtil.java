@@ -13,7 +13,7 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
-import io.vertx.core.Promise;
+
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -244,273 +244,164 @@ public class EncryptedClusterWideMapUtil {
 		/**
 		 * {@inheritDoc}
 		 */
-	@Override public Future<V> get(K k) {
-		Promise<V> promise = Promise.promise();
-		delegate_.get(k).onComplete(ar -> {
+	@Override public void get(K k, Handler<AsyncResult<V>> resultHandler) {
+		delegate_.get(k, ar -> {
 			if (ar.succeeded()) {
 				String entry = ar.result();
 				if (entry != null) {
-					decrypt_(entry, r -> {
-						if (r.succeeded()) {
-							promise.complete(r.result());
-						} else {
-							promise.fail(r.cause());
-						}
-					});
+					decrypt_(entry, resultHandler);
 				} else {
-					promise.complete(null);
+					resultHandler.handle(Future.succeededFuture(null));
 				}
 			} else {
-				promise.fail(ar.cause());
+				resultHandler.handle(Future.failedFuture(ar.cause()));
 			}
 		});
-		return promise.future();
 	}
 
-		/**
-		 * {@inheritDoc}
-		 */
-	@Override public Future<Void> put(K k, V v) {
-		Promise<Void> promise = Promise.promise();
+	@Override public void put(K k, V v, Handler<AsyncResult<Void>> completionHandler) {
 		encrypt_(v, res -> {
 			if (res.succeeded()) {
-				delegate_.put(k, res.result()).onComplete(ar -> {
-					if (ar.succeeded()) {
-						promise.complete(ar.result());
-					} else {
-						promise.fail(ar.cause());
-					}
-				});
+				delegate_.put(k, res.result(), completionHandler);
 			} else {
-				promise.fail(res.cause());
+				completionHandler.handle(Future.failedFuture(res.cause()));
 			}
 		});
-		return promise.future();
 	}
 
-		/**
-		 * {@inheritDoc}
-		 */
-	@Override public Future<Void> put(K k, V v, long ttl) {
-		Promise<Void> promise = Promise.promise();
+	@Override public void put(K k, V v, long ttl, Handler<AsyncResult<Void>> completionHandler) {
 		encrypt_(v, res -> {
 			if (res.succeeded()) {
-				delegate_.put(k, res.result(), ttl).onComplete(ar -> {
-					if (ar.succeeded()) {
-						promise.complete(ar.result());
-					} else {
-						promise.fail(ar.cause());
-					}
-				});
+				delegate_.put(k, res.result(), ttl, completionHandler);
 			} else {
-				promise.fail(res.cause());
+				completionHandler.handle(Future.failedFuture(res.cause()));
 			}
 		});
-		return promise.future();
 	}
 
-		/**
-		 * {@inheritDoc}
-		 */
-	@Override public Future<V> putIfAbsent(K k, V v) {
-		Promise<V> promise = Promise.promise();
+	@Override public void putIfAbsent(K k, V v, Handler<AsyncResult<V>> completionHandler) {
 		encrypt_(v, resEncrypt -> {
 			if (resEncrypt.succeeded()) {
-				delegate_.putIfAbsent(k, resEncrypt.result()).onComplete(ar -> {
+				delegate_.putIfAbsent(k, resEncrypt.result(), ar -> {
 					if (ar.succeeded()) {
 						String entry = ar.result();
 						if (entry != null) {
-							decrypt_(entry, r -> {
-								if (r.succeeded()) {
-									promise.complete(r.result());
-								} else {
-									promise.fail(r.cause());
-								}
-							});
+							decrypt_(entry, completionHandler);
 						} else {
-							promise.complete(null);
+							completionHandler.handle(Future.succeededFuture(null));
 						}
 					} else {
-						promise.fail(ar.cause());
+						completionHandler.handle(Future.failedFuture(ar.cause()));
 					}
 				});
 			} else {
-				promise.fail(resEncrypt.cause());
+				completionHandler.handle(Future.failedFuture(resEncrypt.cause()));
 			}
 		});
-		return promise.future();
 	}
 
-		/**
-		 * {@inheritDoc}
-		 */
-	@Override public Future<V> putIfAbsent(K k, V v, long ttl) {
-		Promise<V> promise = Promise.promise();
+	@Override public void putIfAbsent(K k, V v, long ttl, Handler<AsyncResult<V>> completionHandler) {
 		encrypt_(v, resEncrypt -> {
 			if (resEncrypt.succeeded()) {
-				delegate_.putIfAbsent(k, resEncrypt.result(), ttl).onComplete(ar -> {
+				delegate_.putIfAbsent(k, resEncrypt.result(), ttl, ar -> {
 					if (ar.succeeded()) {
 						String entry = ar.result();
 						if (entry != null) {
-							decrypt_(entry, r -> {
-								if (r.succeeded()) {
-									promise.complete(r.result());
-								} else {
-									promise.fail(r.cause());
-								}
-							});
+							decrypt_(entry, completionHandler);
 						} else {
-							promise.complete(null);
+							completionHandler.handle(Future.succeededFuture(null));
 						}
 					} else {
-						promise.fail(ar.cause());
+						completionHandler.handle(Future.failedFuture(ar.cause()));
 					}
 				});
 			} else {
-				promise.fail(resEncrypt.cause());
+				completionHandler.handle(Future.failedFuture(resEncrypt.cause()));
 			}
 		});
-		return promise.future();
 	}
 
-		/**
-		 * {@inheritDoc}
-		 */
-	@Override public Future<V> remove(K k) {
-		Promise<V> promise = Promise.promise();
-		delegate_.remove(k).onComplete(ar -> {
+	@Override public void remove(K k, Handler<AsyncResult<V>> resultHandler) {
+		delegate_.remove(k, ar -> {
 			if (ar.succeeded()) {
 				String entry = ar.result();
 				if (entry != null) {
-					decrypt_(entry, r -> {
-						if (r.succeeded()) {
-							promise.complete(r.result());
-						} else {
-							promise.fail(r.cause());
-						}
-					});
+					decrypt_(entry, resultHandler);
 				} else {
-					promise.complete(null);
+					resultHandler.handle(Future.succeededFuture(null));
 				}
 			} else {
-				promise.fail(ar.cause());
+				resultHandler.handle(Future.failedFuture(ar.cause()));
 			}
 		});
-		return promise.future();
 	}
 
-		/**
-		 * {@inheritDoc}
-		 */
-	@Override public Future<Boolean> removeIfPresent(K k, V v) {
-		Promise<Boolean> promise = Promise.promise();
+	@Override public void removeIfPresent(K k, V v, Handler<AsyncResult<Boolean>> resultHandler) {
 		encrypt_(v, resEncrypt -> {
 			if (resEncrypt.succeeded()) {
-				delegate_.removeIfPresent(k, resEncrypt.result()).onComplete(ar -> {
-					if (ar.succeeded()) {
-						promise.complete(ar.result());
-					} else {
-						promise.fail(ar.cause());
-					}
-				});
+				delegate_.removeIfPresent(k, resEncrypt.result(), resultHandler);
 			} else {
-				promise.fail(resEncrypt.cause());
+				resultHandler.handle(Future.failedFuture(resEncrypt.cause()));
 			}
 		});
-		return promise.future();
 	}
 
-		/**
-		 * {@inheritDoc}
-		 */
-	@Override public Future<V> replace(K k, V v) {
-		Promise<V> promise = Promise.promise();
+	@Override public void replace(K k, V v, Handler<AsyncResult<V>> resultHandler) {
 		encrypt_(v, resEncrypt -> {
 			if (resEncrypt.succeeded()) {
-				delegate_.replace(k, resEncrypt.result()).onComplete(ar -> {
+				delegate_.replace(k, resEncrypt.result(), ar -> {
 					if (ar.succeeded()) {
 						String entry = ar.result();
 						if (entry != null) {
-							decrypt_(entry, r -> {
-								if (r.succeeded()) {
-									promise.complete(r.result());
-								} else {
-									promise.fail(r.cause());
-								}
-							});
+							decrypt_(entry, resultHandler);
 						} else {
-							promise.complete(null);
+							resultHandler.handle(Future.succeededFuture(null));
 						}
 					} else {
-						promise.fail(ar.cause());
+						resultHandler.handle(Future.failedFuture(ar.cause()));
 					}
 				});
 			} else {
-				promise.fail(resEncrypt.cause());
+				resultHandler.handle(Future.failedFuture(resEncrypt.cause()));
 			}
 		});
-		return promise.future();
 	}
 
-		/**
-		 * {@inheritDoc}
-		 */
-	@Override public Future<Boolean> replaceIfPresent(K k, V oldValue, V newValue) {
-		Promise<Boolean> promise = Promise.promise();
+	@Override public void replaceIfPresent(K k, V oldValue, V newValue, Handler<AsyncResult<Boolean>> resultHandler) {
 		encrypt_(oldValue, resEncryptOld -> {
 			if (resEncryptOld.succeeded()) {
 				encrypt_(newValue, resEncryptNew -> {
 					if (resEncryptNew.succeeded()) {
-						delegate_.replaceIfPresent(k, resEncryptOld.result(), resEncryptNew.result()).onComplete(ar -> {
-							if (ar.succeeded()) {
-								promise.complete(ar.result());
-							} else {
-								promise.fail(ar.cause());
-							}
-						});
+						delegate_.replaceIfPresent(k, resEncryptOld.result(), resEncryptNew.result(), resultHandler);
 					} else {
-						promise.fail(resEncryptNew.cause());
+						resultHandler.handle(Future.failedFuture(resEncryptNew.cause()));
 					}
 				});
 			} else {
-				promise.fail(resEncryptOld.cause());
+				resultHandler.handle(Future.failedFuture(resEncryptOld.cause()));
 			}
 		});
-		return promise.future();
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override public Future<Void> clear() {
-		return delegate_.clear();
+	@Override public void clear(Handler<AsyncResult<Void>> resultHandler) {
+		delegate_.clear(resultHandler);
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override public Future<Integer> size() {
-		return delegate_.size();
+	@Override public void size(Handler<AsyncResult<Integer>> resultHandler) {
+		delegate_.size(resultHandler);
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override public Future<Set<K>> keys() {
-		return delegate_.keys();
+	@Override public void keys(Handler<AsyncResult<Set<K>>> resultHandler) {
+		delegate_.keys(resultHandler);
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override public Future<List<V>> values() {
-		Promise<List<V>> promise = Promise.promise();
+	@Override public void values(Handler<AsyncResult<List<V>>> resultHandler) {
 		delegate_.values(resValues -> {
 			if (resValues.succeeded()) {
 				List<String> values = resValues.result();
-				@SuppressWarnings("rawtypes") List<Future> futures = new ArrayList<>(values.size());
+				List<Future> futures = new ArrayList<>(values.size());
 				for (String value : values) {
-					Promise<V> decrPromise = Promise.promise();
+					Future<V> decrPromise = Future.future();
 					decrypt_(value, r -> {
 						if (r.succeeded()) {
 							decrPromise.complete(r.result());
@@ -518,42 +409,36 @@ public class EncryptedClusterWideMapUtil {
 							decrPromise.fail(r.cause());
 						}
 					});
-				futures.add(decrPromise.future());
-			}
-			@SuppressWarnings({"rawtypes", "unchecked"})
-			List<? extends Future<?>> typedFutures = (List<? extends Future<?>>) (List) futures;
-			Future.all(typedFutures).onComplete(ar -> {
+					futures.add(decrPromise);
+				}
+				CompositeFuture.all(futures).setHandler(ar -> {
 					if (ar.succeeded()) {
 						CompositeFuture composite = ar.result();
 						List<V> result = new ArrayList<>(composite.size());
-						for (int i = composite.size(); 0 < i--;) {
-							result.add(composite.resultAt(i));
+						for (int i = 0; i < composite.size(); i++) {
+							// Safe cast because decrPromise is Future<V> and composite.resultAt(i) returns the result of that future
+							result.add((V) composite.resultAt(i));
 						}
-						promise.complete(result);
+						resultHandler.handle(Future.succeededFuture(result));
 					} else {
-						promise.fail(ar.cause());
+						resultHandler.handle(Future.failedFuture(ar.cause()));
 					}
 				});
 			} else {
-				promise.fail(resValues.cause());
+				resultHandler.handle(Future.failedFuture(resValues.cause()));
 			}
 		});
-		return promise.future();
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override public Future<Map<K, V>> entries() {
-		Promise<Map<K, V>> promise = Promise.promise();
+	@Override public void entries(Handler<AsyncResult<Map<K, V>>> resultHandler) {
 		delegate_.entries(resEntries -> {
 			if (resEntries.succeeded()) {
 				Map<K, String> entries = resEntries.result();
 				List<K> keys = new ArrayList<>(entries.size());
 				for (K key : entries.keySet()) keys.add(key);
-				@SuppressWarnings("rawtypes") List<Future> futures = new ArrayList<>(keys.size());
+				List<Future> futures = new ArrayList<>(keys.size());
 				for (K key : keys) {
-					Promise<V> decrPromise = Promise.promise();
+					Future<V> decrPromise = Future.future();
 					decrypt_(entries.get(key), r -> {
 						if (r.succeeded()) {
 							decrPromise.complete(r.result());
@@ -561,28 +446,28 @@ public class EncryptedClusterWideMapUtil {
 							decrPromise.fail(r.cause());
 						}
 					});
-				futures.add(decrPromise.future());
-			}
-			@SuppressWarnings({"rawtypes", "unchecked"})
-			List<? extends Future<?>> typedFutures = (List<? extends Future<?>>) (List) futures;
-			Future.all(typedFutures).onComplete(ar -> {
+					futures.add(decrPromise);
+				}
+				CompositeFuture.all(futures).setHandler(ar -> {
 					if (ar.succeeded()) {
 						CompositeFuture composite = ar.result();
 						Map<K, V> result = new HashMap<>(composite.size());
-						for (int i = composite.size(); 0 < i--;) {
-							result.put(keys.get(i), composite.resultAt(i));
+						for (int i = 0; i < composite.size(); i++) {
+							// Safe cast
+							result.put(keys.get(i), (V) composite.resultAt(i));
 						}
-						promise.complete(result);
+						resultHandler.handle(Future.succeededFuture(result));
 					} else {
-						promise.fail(ar.cause());
+						resultHandler.handle(Future.failedFuture(ar.cause()));
 					}
 				});
 			} else {
-				promise.fail(resEntries.cause());
+				resultHandler.handle(Future.failedFuture(resEntries.cause()));
 			}
 		});
-		return promise.future();
 	}
+
+
 
 	}
 

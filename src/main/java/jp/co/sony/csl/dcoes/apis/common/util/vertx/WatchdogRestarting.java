@@ -4,10 +4,9 @@ import io.vertx.core.AbstractVerticle;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
-import io.vertx.core.Promise;
+
 import io.vertx.core.http.HttpClient;
 import io.vertx.core.http.HttpClientOptions;
-import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpClientRequest;
 import io.vertx.core.http.HttpClientResponse;
 import org.slf4j.Logger;
@@ -56,16 +55,16 @@ public class WatchdogRestarting extends AbstractVerticle {
 	 * @param startFuture {@inheritDoc}
 	 * @throws Exception {@inheritDoc}
 	 */
-	@Override public void start(Promise<Void> startPromise) throws Exception {
+	@Override public void start(Future<Void> startFuture) throws Exception {
 		init(resInit -> {
 			if (resInit.succeeded()) {
 				if (client_ != null) {
 					watchdogRestartingTimerHandler_(0L);
 				}
 				if (log.isTraceEnabled()) log.trace("started : " + deploymentID());
-				startPromise.complete();
+				startFuture.complete();
 			} else {
-				startPromise.fail(resInit.cause());
+				startFuture.fail(resInit.cause());
 			}
 		});
 	}
@@ -197,23 +196,20 @@ public class WatchdogRestarting extends AbstractVerticle {
 		 */
 	private void send_(Handler<AsyncResult<Void>> completionHandler) {
 		Long requestTimeoutMsec = VertxConfig.config.getLong(DEFAULT_REQUEST_TIMEOUT_MSEC, "watchdog", "requestTimeoutMsec");
-		// Use Vert.x 4 HttpClient API
-		client_.request(HttpMethod.GET, uri_)
-			.compose(req -> req.send())
-			.timeout(requestTimeoutMsec.longValue(), TimeUnit.MILLISECONDS)
-			.onComplete(ar -> {
-				if (ar.succeeded()) {
-					HttpClientResponse response = ar.result();
-					if (log.isDebugEnabled()) log.debug("status : " + response.statusCode());
-					if (response.statusCode() == 200) {
-						completionHandler.handle(Future.succeededFuture());
-					} else {
-						completionHandler.handle(Future.failedFuture("http get failed : " + response.statusCode() + " : " + response.statusMessage()));
-					}
-				} else {
-					completionHandler.handle(Future.failedFuture(ar.cause()));
-				}
-			});
+		// Use Vert.x 3 HttpClient API
+		HttpClientRequest req = client_.get(uri_, response -> {
+			if (log.isDebugEnabled()) log.debug("status : " + response.statusCode());
+			if (response.statusCode() == 200) {
+				completionHandler.handle(Future.succeededFuture());
+			} else {
+				completionHandler.handle(Future.failedFuture("http get failed : " + response.statusCode() + " : " + response.statusMessage()));
+			}
+		});
+		req.exceptionHandler(t -> {
+			completionHandler.handle(Future.failedFuture(t));
+		});
+		req.setTimeout(requestTimeoutMsec);
+		req.end();
 	}
 	}
 

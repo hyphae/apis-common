@@ -4,7 +4,7 @@ import io.vertx.core.AbstractVerticle;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
-import io.vertx.core.Promise;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import io.vertx.core.shareddata.AsyncMap;
@@ -40,7 +40,7 @@ public abstract class AbstractStarter extends AbstractVerticle {
 	 * @param startFuture {@inheritDoc}
 	 * @throws Exception {@inheritDoc}
 	 */
-	@Override public void start(Promise<Void> startPromise) throws Exception {
+	@Override public void start(Future<Void> startFuture) throws Exception {
 		init_(resInit -> {
 			if (resInit.succeeded()) {
 				startShutdownAllService_(resShutdownAll -> {
@@ -57,29 +57,29 @@ public abstract class AbstractStarter extends AbstractVerticle {
 													if (log.isInfoEnabled()) log.info("communityId  : " + VertxConfig.communityId());
 													if (log.isInfoEnabled()) log.info("clusterId    : " + VertxConfig.clusterId());
 													if (log.isTraceEnabled()) log.trace("started : " + deploymentID());
-													startPromise.complete();
+													startFuture.complete();
 												} else {
-													startPromise.fail(resDoStart.cause());
+													startFuture.fail(resDoStart.cause());
 													}
 										});
 									} else {
-										startPromise.fail(resWatchdogRestarting.cause());
+										startFuture.fail(resWatchdogRestarting.cause());
 											}
 										});
 									} else {
-										startPromise.fail(resMulticastLogHandlerLevel.cause());
+										startFuture.fail(resMulticastLogHandlerLevel.cause());
 									}
 								});
 							} else {
-								startPromise.fail(resShutdownLocal.cause());
+								startFuture.fail(resShutdownLocal.cause());
 							}
 						});
 					} else {
-						startPromise.fail(resShutdownAll.cause());
+						startFuture.fail(resShutdownAll.cause());
 					}
 				});
 			} else {
-				startPromise.fail(resInit.cause());
+				startFuture.fail(resInit.cause());
 			}
 		});
 	}
@@ -94,7 +94,7 @@ public abstract class AbstractStarter extends AbstractVerticle {
 	 * @param stopFuture {@inheritDoc}
 	 * @throws Exception {@inheritDoc}
 	 */
-	@Override public void stop(Promise<Void> stopPromise) throws Exception {
+	@Override public void stop(Future<Void> stopFuture) throws Exception {
 		doStop(resDoStop -> {
 			if (resDoStop.succeeded()) {
 				// nop
@@ -102,7 +102,7 @@ public abstract class AbstractStarter extends AbstractVerticle {
 				log.error("stop failed", resDoStop.cause());
 			}
 			if (log.isTraceEnabled()) log.trace("stopped : " + deploymentID());
-			stopPromise.complete();
+			stopFuture.complete();
 		});
 	}
 
