@@ -22,7 +22,9 @@ public class FileSystemExclusiveLockUtilTest {
 		vertx = Vertx.vertx();
 	}
 	@After public void after(TestContext context) {
-		vertx.close();
+		if (vertx != null) {
+			vertx.close(context.asyncAssertSuccess());
+		}
 	}
 
 	@Test public void once(TestContext context) {

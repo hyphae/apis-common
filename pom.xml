@@ -4,6 +4,7 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <vertx.version>4.5.10</vertx.version>
+    <apis.bom.version>3.4.1</apis.bom.version>
   </properties>
 
   <groupId>jp.co.sony.csl.dcoes.apis</groupId>
@@ -17,7 +18,7 @@
       <dependency>
         <groupId>jp.co.sony.csl.dcoes.apis</groupId>
         <artifactId>apis-bom</artifactId>
-        <version>${project.version}</version>
+        <version>${apis.bom.version}</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
