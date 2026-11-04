@@ -1,0 +1,56 @@
+name: Checkstyle
+
+on:
+  pull_request:
+  push:
+    branches: [main, stable-vertx-3.9, vertex-4]
+
+permissions:
+  contents: read
+
+jobs:
+  checkstyle:
+    runs-on: ubuntu-latest   # a fresh, empty machine every run
+
+    steps:
+      # 1. Get your project onto the machine.
+      #    Must be first: the later steps need pom.xml to exist.
+      - name: "Checkout code"
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      # 2. Install Java.
+      #    Needs pom.xml from step 1 (cache: maven builds its cache key from it).
+      #    Must come before any mvn command.
+      - name: "Setup Java"
+        uses: actions/setup-java@c5195efecf7bdfc987ee8bae7a71cb8b11521c00 # v4.7.1
+        with:
+          distribution: temurin
+          java-version: '11'
+          cache: maven
+
+      # 3. Download the BOM project into a subfolder.
+      #    This is a second project, not your own.
+      - name: "Checkout apis-bom"
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          repository: hyphae/apis-bom
+          ref: 7cb7e80430a170abfe5ba00376017171a6a1a829
+          path: apis-bom   # put it in ./apis-bom, not in the root
+
+      # 4. Build the BOM and store it in the local Maven cache (~/.m2).
+      #    Needs Java (step 2) and the BOM files (step 3).
+      - name: "Install apis-bom"
+        run: mvn -B -f apis-bom/pom.xml install -DskipTests
+
+      # 5. Now your pom.xml can find apis-bom 4.5.10 in ~/.m2.
+      #    This is the step that failed before.
+      - name: "Run Checkstyle"
+        run: mvn -B checkstyle:check
+
+      # 6. Save the report, even if Checkstyle failed.
+      - name: "Upload artifact"
+        if: always()
+        uses: actions/upload-artifact@4cec3d8aa04e39d1a68397de0c4cd6fb9dce8ec1 # v4.6.1
+        with:
+          name: checkstyle-report
+          path: target/checkstyle-result.xml
