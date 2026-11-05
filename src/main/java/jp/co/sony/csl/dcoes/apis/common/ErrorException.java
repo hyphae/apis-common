@@ -24,53 +24,53 @@ package jp.co.sony.csl.dcoes.apis.common;
 // こっちは FailureException かな ...
 public class ErrorException extends Exception {
 
-	private static final long serialVersionUID = 1L;
+  private static final long serialVersionUID = 1L;
 
-	public final String unitId;
-	public final Error.Category category;
-	public final Error.Extent extent;
-	public final Error.Level level;
+  public final String unitId;
+  public final Error.Category category;
+  public final Error.Extent extent;
+  public final Error.Level level;
 
-	/**
-	 * Creates instance.
-	 * @param unitId ID of unit that generated error	 
-	 * @param category error category object
-	 * @param extent error extent object
-	 * @param level error level object
-	 * @param message error message
-	 * インスタンス作成.
-	 * @param unitId エラー生成ユニット ID
-	 * @param category エラーの category オブジェクト
-	 * @param extent エラーの extent オブジェクト
-	 * @param level エラーの level オブジェクト
-	 * @param message エラーメッセージ
-	 */
-	private ErrorException(String unitId, Error.Category category, Error.Extent extent, Error.Level level, String message) {
-		super(message, null, true, false);
-		this.unitId = unitId;
-		this.category = category;
-		this.extent = extent;
-		this.level = level;
-	}
+  /**
+   * Creates instance.
+   * @param unitId ID of unit that generated error	 
+   * @param category error category object
+   * @param extent error extent object
+   * @param level error level object
+   * @param message error message
+   * インスタンス作成.
+   * @param unitId エラー生成ユニット ID
+   * @param category エラーの category オブジェクト
+   * @param extent エラーの extent オブジェクト
+   * @param level エラーの level オブジェクト
+   * @param message エラーメッセージ
+   */
+  private ErrorException(String unitId, Error.Category category, Error.Extent extent, Error.Level level, String message) {
+    super(message, null, true, false);
+    this.unitId = unitId;
+    this.category = category;
+    this.extent = extent;
+    this.level = level;
+  }
 
-	/**
-	 * Creates instance.
-	 * @param unitId ID of unit that generated error	 
-	 * @param category error category object
-	 * @param extent error extent object
-	 * @param level error level object
-	 * @param message error message
-	 * @return errorexception object
-	 * インスタンス作成.
-	 * @param unitId エラー生成ユニット ID
-	 * @param category エラーの category オブジェクト
-	 * @param extent エラーの extent オブジェクト
-	 * @param level エラーの level オブジェクト
-	 * @param message エラーメッセージ
-	 * @return errorexception オブジェクト
-	 */
-	public static ErrorException create(String unitId, Error.Category category, Error.Extent extent, Error.Level level, String message) {
-		return new ErrorException(unitId, category, extent, level, message);
-	}
+  /**
+   * Creates instance.
+   * @param unitId ID of unit that generated error	 
+   * @param category error category object
+   * @param extent error extent object
+   * @param level error level object
+   * @param message error message
+   * @return errorexception object
+   * インスタンス作成.
+   * @param unitId エラー生成ユニット ID
+   * @param category エラーの category オブジェクト
+   * @param extent エラーの extent オブジェクト
+   * @param level エラーの level オブジェクト
+   * @param message エラーメッセージ
+   * @return errorexception オブジェクト
+   */
+  public static ErrorException create(String unitId, Error.Category category, Error.Extent extent, Error.Level level, String message) {
+    return new ErrorException(unitId, category, extent, level, message);
+  }
 
 }

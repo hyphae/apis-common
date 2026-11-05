@@ -30,39 +30,39 @@ import jp.co.sony.csl.dcoes.apis.common.util.vertx.VertxConfig;
 
 public class MulticastAppenderTest {
 
-	private static final String GROUP = "224.2.2.7";
-	private static final int PORT = 18888;
+  private static final String GROUP = "224.2.2.7";
+  private static final int PORT = 18888;
 
-	@After public void tearDown() {
-		VertxConfig.config.setJsonObject(null);
-	}
+  @After public void tearDown() {
+    VertxConfig.config.setJsonObject(null);
+  }
 
-	@Test public void doesNotStartWithoutEncoder() {
-		MulticastAppender appender = new MulticastAppender();
-		appender.setContext(new LoggerContext());
-		appender.setName("MULTICAST");
-		appender.setGroupAddress(GROUP);
-		appender.setPort(PORT);
-		appender.start();
-		assertFalse("appender must not start without an encoder", appender.isStarted());
-	}
+  @Test public void doesNotStartWithoutEncoder() {
+    MulticastAppender appender = new MulticastAppender();
+    appender.setContext(new LoggerContext());
+    appender.setName("MULTICAST");
+    appender.setGroupAddress(GROUP);
+    appender.setPort(PORT);
+    appender.start();
+    assertFalse("appender must not start without an encoder", appender.isStarted());
+  }
 
-	@Test public void appendBeforeStartDoesNotThrow() {
-		MulticastAppender appender = new MulticastAppender();
-		appender.setContext(new LoggerContext());
-		appender.setName("MULTICAST");
-		LoggerContext lc = new LoggerContext();
-		ILoggingEvent event = new LoggingEvent("fqcn", lc.getLogger("test"), Level.INFO, "hi", null, null);
-		// Must be a no-op, not an exception, when the appender never started.
-		appender.doAppend(event);
-	}
+  @Test public void appendBeforeStartDoesNotThrow() {
+    MulticastAppender appender = new MulticastAppender();
+    appender.setContext(new LoggerContext());
+    appender.setName("MULTICAST");
+    LoggerContext lc = new LoggerContext();
+    ILoggingEvent event = new LoggingEvent("fqcn", lc.getLogger("test"), Level.INFO, "hi", null, null);
+    // Must be a no-op, not an exception, when the appender never started.
+    appender.doAppend(event);
+  }
 
-	@Test public void setStringLevelParsesAndStoresLevel() {
-		MulticastAppender appender = new MulticastAppender();
-		appender.setContext(new LoggerContext());
-		appender.setName("MULTICAST");
-		appender.setLevelThresholdByName("DEBUG");
-		assertTrue(appender.getLevelThreshold() == Level.DEBUG);
-	}
+  @Test public void setStringLevelParsesAndStoresLevel() {
+    MulticastAppender appender = new MulticastAppender();
+    appender.setContext(new LoggerContext());
+    appender.setName("MULTICAST");
+    appender.setLevelThresholdByName("DEBUG");
+    assertTrue(appender.getLevelThreshold() == Level.DEBUG);
+  }
 
 }

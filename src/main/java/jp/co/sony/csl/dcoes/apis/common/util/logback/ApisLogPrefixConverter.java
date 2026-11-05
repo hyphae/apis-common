@@ -8,14 +8,14 @@ import jp.co.sony.csl.dcoes.apis.common.util.vertx.VertxConfig;
 
 public class ApisLogPrefixConverter extends ClassicConverter {
 
-	@Override public String convert(ILoggingEvent event) {
-		String programId = VertxConfig.programId();
-		if (programId == null) programId = "";
-		String unitId = VertxConfig.config.getString("unitId");
-		if (unitId == null || unitId.isEmpty()) {
-			return "[[[" + programId + "]]] ";
-		}
-		return "[[[" + programId + ":" + unitId + "]]] ";
-	}
+  @Override public String convert(ILoggingEvent event) {
+    String programId = VertxConfig.programId();
+    if (programId == null) programId = "";
+    String unitId = VertxConfig.config.getString("unitId");
+    if (unitId == null || unitId.isEmpty()) {
+      return "[[[" + programId + "]]] ";
+    }
+    return "[[[" + programId + ":" + unitId + "]]] ";
+  }
 
 }

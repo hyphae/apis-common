@@ -29,561 +29,561 @@ import jp.co.sony.csl.dcoes.apis.common.util.EncryptionUtil;
  * @author OES Project
  */
 public class EncryptedClusterWideMapUtil {
-	private static final Logger log = LoggerFactory.getLogger(EncryptedClusterWideMapUtil.class);
+  private static final Logger log = LoggerFactory.getLogger(EncryptedClusterWideMapUtil.class);
 
-	private static final char CLASS_VALUE_DELIMITER = ':';
-	private static final String CLASS_CODE_STRING = "s";
-	private static final String CLASS_CODE_JSON_OBJECT = "jo";
-	private static final String CLASS_CODE_JSON_ARRAY = "ja";
+  private static final char CLASS_VALUE_DELIMITER = ':';
+  private static final String CLASS_CODE_STRING = "s";
+  private static final String CLASS_CODE_JSON_OBJECT = "jo";
+  private static final String CLASS_CODE_JSON_ARRAY = "ja";
 
-	private static boolean SECURE_CLUSTER = VertxConfig.securityEnabled();
-	static {
-		if (SECURE_CLUSTER) {
-			if (log.isInfoEnabled()) log.info("ClusterWideMap will be encrypted");
-		}
-	}
+  private static boolean SECURE_CLUSTER = VertxConfig.securityEnabled();
+  static {
+    if (SECURE_CLUSTER) {
+      if (log.isInfoEnabled()) log.info("ClusterWideMap will be encrypted");
+    }
+  }
 
-	/**
-	 * Gets instance {@link AsyncMap} which encrypts values and keeps them.
-	 * {@link EncryptionUtil#initialize(Handler) encryption processing default value} is used as the encryption process seed.
-	 * Does not encrypt if {@link VertxConfig#securityEnabled()} is {@code false}.
-	 * @param <K> the type of keys maintained by this map
-	 * @param <V> the type of mapped values
-	 * @param vertx vertx instance
-	 * @param name the name of the map
-	 * @param resultHandler the map will be returned asynchronously in this handler
-	 * 値を暗号化して保持する {@link AsyncMap} インスタンスを取得する.
-	 * 暗号処理のシードは {@link EncryptionUtil#initialize(Handler) 暗号処理系のデフォルト値} が使われる.
-	 * {@link VertxConfig#securityEnabled()} が {@code false} なら暗号化しない.
-	 * @param <K> the type of keys maintained by this map
-	 * @param <V> the type of mapped values
-	 * @param vertx vertx インスタンス
-	 * @param name the name of the map
-	 * @param resultHandler the map will be returned asynchronously in this handler
-	 */
-	public static <K, V> void getEncryptedClusterWideMap(Vertx vertx, String name, Handler<AsyncResult<AsyncMap<K, V>>> resultHandler) {
-		getEncryptedClusterWideMap(vertx, name, null, resultHandler);
-	}
-	/**
-	 * Gets instance {@link AsyncMap} which encrypts values and keeps them.
-	 * Does not encrypt if {@link VertxConfig#securityEnabled()} is {@code false}.
-	 * @param <K> the type of keys maintained by this map
-	 * @param <V> the type of mapped values
-	 * @param vertx vertx instance
-	 * @param name the name of the map
-	 * @param seed seed for encryption. If {@code null} then {@link EncryptionUtil#initialize(Handler) encryption process's default value} is used.
-	 * @param resultHandler the map will be returned asynchronously in this handler
-	 * 値を暗号化して保持する {@link AsyncMap} インスタンスを取得する.
-	 * {@link VertxConfig#securityEnabled()} が {@code false} なら暗号化しない.
-	 * @param <K> the type of keys maintained by this map
-	 * @param <V> the type of mapped values
-	 * @param vertx vertx インスタンス
-	 * @param name the name of the map
-	 * @param seed 暗号処理のためのシード. {@code null} なら {@link EncryptionUtil#initialize(Handler) 暗号処理系のデフォルト値} が使われる
-	 * @param resultHandler the map will be returned asynchronously in this handler
-	 */
-	public static <K, V> void getEncryptedClusterWideMap(Vertx vertx, String name, String seed, Handler<AsyncResult<AsyncMap<K, V>>> resultHandler) {
-		if (SECURE_CLUSTER) {
-			vertx.sharedData().<K, String>getClusterWideMap(name, resMap -> {
-				if (resMap.succeeded()) {
-					AsyncMap<K, V> result;
-					try {
-						result = new EncryptedAsyncMap<K, V>(resMap.result(), seed);
-					} catch (Exception e) {
-						log.error("Failed to create EncryptedAsyncMap", e);
-						resultHandler.handle(Future.failedFuture(e));
-						return;
-					}
-					resultHandler.handle(Future.succeededFuture(result));
-				} else {
-					resultHandler.handle(Future.failedFuture(resMap.cause()));
-				}
-			});
-		} else {
-			vertx.sharedData().<K, V>getClusterWideMap(name, resultHandler);
-		}
-	}
+  /**
+   * Gets instance {@link AsyncMap} which encrypts values and keeps them.
+   * {@link EncryptionUtil#initialize(Handler) encryption processing default value} is used as the encryption process seed.
+   * Does not encrypt if {@link VertxConfig#securityEnabled()} is {@code false}.
+   * @param <K> the type of keys maintained by this map
+   * @param <V> the type of mapped values
+   * @param vertx vertx instance
+   * @param name the name of the map
+   * @param resultHandler the map will be returned asynchronously in this handler
+   * 値を暗号化して保持する {@link AsyncMap} インスタンスを取得する.
+   * 暗号処理のシードは {@link EncryptionUtil#initialize(Handler) 暗号処理系のデフォルト値} が使われる.
+   * {@link VertxConfig#securityEnabled()} が {@code false} なら暗号化しない.
+   * @param <K> the type of keys maintained by this map
+   * @param <V> the type of mapped values
+   * @param vertx vertx インスタンス
+   * @param name the name of the map
+   * @param resultHandler the map will be returned asynchronously in this handler
+   */
+  public static <K, V> void getEncryptedClusterWideMap(Vertx vertx, String name, Handler<AsyncResult<AsyncMap<K, V>>> resultHandler) {
+    getEncryptedClusterWideMap(vertx, name, null, resultHandler);
+  }
+  /**
+   * Gets instance {@link AsyncMap} which encrypts values and keeps them.
+   * Does not encrypt if {@link VertxConfig#securityEnabled()} is {@code false}.
+   * @param <K> the type of keys maintained by this map
+   * @param <V> the type of mapped values
+   * @param vertx vertx instance
+   * @param name the name of the map
+   * @param seed seed for encryption. If {@code null} then {@link EncryptionUtil#initialize(Handler) encryption process's default value} is used.
+   * @param resultHandler the map will be returned asynchronously in this handler
+   * 値を暗号化して保持する {@link AsyncMap} インスタンスを取得する.
+   * {@link VertxConfig#securityEnabled()} が {@code false} なら暗号化しない.
+   * @param <K> the type of keys maintained by this map
+   * @param <V> the type of mapped values
+   * @param vertx vertx インスタンス
+   * @param name the name of the map
+   * @param seed 暗号処理のためのシード. {@code null} なら {@link EncryptionUtil#initialize(Handler) 暗号処理系のデフォルト値} が使われる
+   * @param resultHandler the map will be returned asynchronously in this handler
+   */
+  public static <K, V> void getEncryptedClusterWideMap(Vertx vertx, String name, String seed, Handler<AsyncResult<AsyncMap<K, V>>> resultHandler) {
+    if (SECURE_CLUSTER) {
+      vertx.sharedData().<K, String>getClusterWideMap(name, resMap -> {
+        if (resMap.succeeded()) {
+          AsyncMap<K, V> result;
+          try {
+            result = new EncryptedAsyncMap<K, V>(resMap.result(), seed);
+          } catch (Exception e) {
+            log.error("Failed to create EncryptedAsyncMap", e);
+            resultHandler.handle(Future.failedFuture(e));
+            return;
+          }
+          resultHandler.handle(Future.succeededFuture(result));
+        } else {
+          resultHandler.handle(Future.failedFuture(resMap.cause()));
+        }
+      });
+    } else {
+      vertx.sharedData().<K, V>getClusterWideMap(name, resultHandler);
+    }
+  }
 
-	/**
-	 * Implements {@link AsyncMap} which encrypts and keeps content.
-	 * Encrypts string as-is.
-	 * For {@link JsonArray} and {@link JsonObject}, encrypts serialization result.
-	 * @author OES Project
-	 * @param <K> the type of keys maintained by this map
-	 * @param <V> the type of mapped values
-	 * 内容を暗号化して保持する {@link AsyncMap} 実装.
-	 * 文字列はそのまま暗号化する.
-	 * {@link JsonArray} および {@link JsonObject} はシリアライズ結果を暗号化する.
-	 * @author OES Project
-	 * @param <K> the type of keys maintained by this map
-	 * @param <V> the type of mapped values
-	 */
-	private static class EncryptedAsyncMap<K, V> implements AsyncMap<K, V> {
+  /**
+   * Implements {@link AsyncMap} which encrypts and keeps content.
+   * Encrypts string as-is.
+   * For {@link JsonArray} and {@link JsonObject}, encrypts serialization result.
+   * @author OES Project
+   * @param <K> the type of keys maintained by this map
+   * @param <V> the type of mapped values
+   * 内容を暗号化して保持する {@link AsyncMap} 実装.
+   * 文字列はそのまま暗号化する.
+   * {@link JsonArray} および {@link JsonObject} はシリアライズ結果を暗号化する.
+   * @author OES Project
+   * @param <K> the type of keys maintained by this map
+   * @param <V> the type of mapped values
+   */
+  private static class EncryptedAsyncMap<K, V> implements AsyncMap<K, V> {
 
-		private final AsyncMap<K, String> delegate_;
-		private final Cipher cipher_;
-		private final String seed_;
+    private final AsyncMap<K, String> delegate_;
+    private final Cipher cipher_;
+    private final String seed_;
 
-		/**
-		 * Creates instance.
-		 * @param other asyncmap wrapper object
-		 * @param seed seed
-		 * @throws GeneralSecurityException {@link EncryptionUtil#generateCipher()}
-		 * インスタンスを作成する.
-		 * @param other wrap する asyncmap オブジェクト
-		 * @param seed シード
-		 * @throws GeneralSecurityException {@link EncryptionUtil#generateCipher()}
-		 */
-		private EncryptedAsyncMap(AsyncMap<K, String> other, String seed) throws GeneralSecurityException {
-			delegate_ = other;
-			cipher_ = EncryptionUtil.generateCipher();
-			seed_ = seed;
-		}
+    /**
+     * Creates instance.
+     * @param other asyncmap wrapper object
+     * @param seed seed
+     * @throws GeneralSecurityException {@link EncryptionUtil#generateCipher()}
+     * インスタンスを作成する.
+     * @param other wrap する asyncmap オブジェクト
+     * @param seed シード
+     * @throws GeneralSecurityException {@link EncryptionUtil#generateCipher()}
+     */
+    private EncryptedAsyncMap(AsyncMap<K, String> other, String seed) throws GeneralSecurityException {
+      delegate_ = other;
+      cipher_ = EncryptionUtil.generateCipher();
+      seed_ = seed;
+    }
 
-		////
+    ////
 
-		/**
-		 * Decrypts encrypted entry.
-		 * If original type is {@link JsonArray} or {@link JsonObject}, decrypts because state is serialized.
-		 * @param entry encrypted {@link String}
-		 * @param resultHandler this will be called some time later with the async result.
-		 * 暗号化されたエントリを復号する.
-		 * 元の型が {@link JsonArray} および {@link JsonObject} ならシリアライズされた状態なので復元する.
-		 * @param entry 暗号化された {@link String}
-		 * @param resultHandler this will be called some time later with the async result.
-		 */
-		private void decrypt_(String entry, Handler<AsyncResult<V>> resultHandler) {
-			int pos = entry.indexOf(CLASS_VALUE_DELIMITER);
-			if (0 < pos) {
-				String clazz = entry.substring(0, pos);
-				String value = entry.substring(++pos);
-				String decrypted;
-				try {
-					decrypted = EncryptionUtil.decrypt(value, cipher_, seed_);
-				} catch (Exception e) {
-					log.error("Failed to decrypt entry", e);
-					resultHandler.handle(Future.failedFuture(e));
-					return;
-				}
-				switch (clazz) {
-				case CLASS_CODE_STRING:
-					@SuppressWarnings("unchecked") V s = (V) decrypted;
-					resultHandler.handle(Future.succeededFuture(s));
-					break;
-				case CLASS_CODE_JSON_OBJECT:
-					JsonObjectUtil.toJsonObject(decrypted, res -> {
-						if (res.succeeded()) {
-							@SuppressWarnings("unchecked") V jo = (V) res.result();
-							resultHandler.handle(Future.succeededFuture(jo));
-						} else {
-							resultHandler.handle(Future.failedFuture(res.cause()));
-						}
-					});
-					break;
-				case CLASS_CODE_JSON_ARRAY:
-					JsonObjectUtil.toJsonArray(decrypted, res -> {
-						if (res.succeeded()) {
-							@SuppressWarnings("unchecked") V ja = (V) res.result();
-							resultHandler.handle(Future.succeededFuture(ja));
-						} else {
-							resultHandler.handle(Future.failedFuture(res.cause()));
-						}
-					});
-					break;
-				default:
-					resultHandler.handle(Future.failedFuture("unsupported class code : " + clazz));
-				}
-			} else {
-				resultHandler.handle(Future.failedFuture("illegal entry : " + entry));
-			}
-		}
-		/**
-		 * Encrypts the entry.
-		 * Encrypts {@link String} as-is.
-		 * For {@link JsonArray} and {@link JsonObject}, encrypts serialization result.
-		 * Objects in other formats are returned.
-		 * @param obj Object to be encrypted
-		 * @param resultHandler This will be called some time later with the async result.
-		 * エントリを暗号化する.
-		 * {@link String} はそのまま暗号化する.
-		 * {@link JsonArray} および {@link JsonObject} はシリアライズした結果を暗号化する.
-		 * それ以外の型のオブジェクトはエラーを返す.
-		 * @param obj 暗号化対象オブジェクト
-		 * @param resultHandler this will be called some time later with the async result.
-		 */
-		private void encrypt_(Object obj, Handler<AsyncResult<String>> resultHandler) {
-			String clazz = null;
-			String value = null;
-			if (obj instanceof String) {
-				clazz = CLASS_CODE_STRING;
-				value = (String) obj;
-			} else if (obj instanceof JsonObject) {
-				clazz = CLASS_CODE_JSON_OBJECT;
-				value = ((JsonObject) obj).encode();
-			} else if (obj instanceof JsonArray) {
-				clazz = CLASS_CODE_JSON_ARRAY;
-				value = ((JsonArray) obj).encode();
-			}
-			if (clazz != null && value != null) {
-				String encrypted;
-				try {
-					encrypted = EncryptionUtil.encrypt(value, cipher_, seed_);
-				} catch (Exception e) {
-					log.error("Failed to encrypt entry", e);
-					resultHandler.handle(Future.failedFuture(e));
-					return;
-				}
-				resultHandler.handle(Future.succeededFuture(clazz + CLASS_VALUE_DELIMITER + encrypted));
-			} else {
-				resultHandler.handle(Future.failedFuture("unsupported class : " + obj.getClass().getName()));
-			}
-		}
+    /**
+     * Decrypts encrypted entry.
+     * If original type is {@link JsonArray} or {@link JsonObject}, decrypts because state is serialized.
+     * @param entry encrypted {@link String}
+     * @param resultHandler this will be called some time later with the async result.
+     * 暗号化されたエントリを復号する.
+     * 元の型が {@link JsonArray} および {@link JsonObject} ならシリアライズされた状態なので復元する.
+     * @param entry 暗号化された {@link String}
+     * @param resultHandler this will be called some time later with the async result.
+     */
+    private void decrypt_(String entry, Handler<AsyncResult<V>> resultHandler) {
+      int pos = entry.indexOf(CLASS_VALUE_DELIMITER);
+      if (0 < pos) {
+        String clazz = entry.substring(0, pos);
+        String value = entry.substring(++pos);
+        String decrypted;
+        try {
+          decrypted = EncryptionUtil.decrypt(value, cipher_, seed_);
+        } catch (Exception e) {
+          log.error("Failed to decrypt entry", e);
+          resultHandler.handle(Future.failedFuture(e));
+          return;
+        }
+        switch (clazz) {
+          case CLASS_CODE_STRING:
+            @SuppressWarnings("unchecked") V s = (V) decrypted;
+            resultHandler.handle(Future.succeededFuture(s));
+            break;
+          case CLASS_CODE_JSON_OBJECT:
+            JsonObjectUtil.toJsonObject(decrypted, res -> {
+              if (res.succeeded()) {
+                @SuppressWarnings("unchecked") V jo = (V) res.result();
+                resultHandler.handle(Future.succeededFuture(jo));
+              } else {
+                resultHandler.handle(Future.failedFuture(res.cause()));
+              }
+            });
+            break;
+          case CLASS_CODE_JSON_ARRAY:
+            JsonObjectUtil.toJsonArray(decrypted, res -> {
+              if (res.succeeded()) {
+                @SuppressWarnings("unchecked") V ja = (V) res.result();
+                resultHandler.handle(Future.succeededFuture(ja));
+              } else {
+                resultHandler.handle(Future.failedFuture(res.cause()));
+              }
+            });
+            break;
+          default:
+            resultHandler.handle(Future.failedFuture("unsupported class code : " + clazz));
+        }
+      } else {
+        resultHandler.handle(Future.failedFuture("illegal entry : " + entry));
+      }
+    }
+    /**
+     * Encrypts the entry.
+     * Encrypts {@link String} as-is.
+     * For {@link JsonArray} and {@link JsonObject}, encrypts serialization result.
+     * Objects in other formats are returned.
+     * @param obj Object to be encrypted
+     * @param resultHandler This will be called some time later with the async result.
+     * エントリを暗号化する.
+     * {@link String} はそのまま暗号化する.
+     * {@link JsonArray} および {@link JsonObject} はシリアライズした結果を暗号化する.
+     * それ以外の型のオブジェクトはエラーを返す.
+     * @param obj 暗号化対象オブジェクト
+     * @param resultHandler this will be called some time later with the async result.
+     */
+    private void encrypt_(Object obj, Handler<AsyncResult<String>> resultHandler) {
+      String clazz = null;
+      String value = null;
+      if (obj instanceof String) {
+        clazz = CLASS_CODE_STRING;
+        value = (String) obj;
+      } else if (obj instanceof JsonObject) {
+        clazz = CLASS_CODE_JSON_OBJECT;
+        value = ((JsonObject) obj).encode();
+      } else if (obj instanceof JsonArray) {
+        clazz = CLASS_CODE_JSON_ARRAY;
+        value = ((JsonArray) obj).encode();
+      }
+      if (clazz != null && value != null) {
+        String encrypted;
+        try {
+          encrypted = EncryptionUtil.encrypt(value, cipher_, seed_);
+        } catch (Exception e) {
+          log.error("Failed to encrypt entry", e);
+          resultHandler.handle(Future.failedFuture(e));
+          return;
+        }
+        resultHandler.handle(Future.succeededFuture(clazz + CLASS_VALUE_DELIMITER + encrypted));
+      } else {
+        resultHandler.handle(Future.failedFuture("unsupported class : " + obj.getClass().getName()));
+      }
+    }
 
-		////
+    ////
 
-		/**
-		 * {@inheritDoc}
-		 */
-	@Override public Future<V> get(K k) {
-		Promise<V> promise = Promise.promise();
-		delegate_.get(k).onComplete(ar -> {
-			if (ar.succeeded()) {
-				String entry = ar.result();
-				if (entry != null) {
-					decrypt_(entry, r -> {
-						if (r.succeeded()) {
-							promise.complete(r.result());
-						} else {
-							promise.fail(r.cause());
-						}
-					});
-				} else {
-					promise.complete(null);
-				}
-			} else {
-				promise.fail(ar.cause());
-			}
-		});
-		return promise.future();
-	}
+    /**
+     * {@inheritDoc}
+     */
+    @Override public Future<V> get(K k) {
+      Promise<V> promise = Promise.promise();
+      delegate_.get(k).onComplete(ar -> {
+        if (ar.succeeded()) {
+          String entry = ar.result();
+          if (entry != null) {
+            decrypt_(entry, r -> {
+              if (r.succeeded()) {
+                promise.complete(r.result());
+              } else {
+                promise.fail(r.cause());
+              }
+            });
+          } else {
+            promise.complete(null);
+          }
+        } else {
+          promise.fail(ar.cause());
+        }
+      });
+      return promise.future();
+    }
 
-		/**
-		 * {@inheritDoc}
-		 */
-	@Override public Future<Void> put(K k, V v) {
-		Promise<Void> promise = Promise.promise();
-		encrypt_(v, res -> {
-			if (res.succeeded()) {
-				delegate_.put(k, res.result()).onComplete(ar -> {
-					if (ar.succeeded()) {
-						promise.complete(ar.result());
-					} else {
-						promise.fail(ar.cause());
-					}
-				});
-			} else {
-				promise.fail(res.cause());
-			}
-		});
-		return promise.future();
-	}
+    /**
+     * {@inheritDoc}
+     */
+    @Override public Future<Void> put(K k, V v) {
+      Promise<Void> promise = Promise.promise();
+      encrypt_(v, res -> {
+        if (res.succeeded()) {
+          delegate_.put(k, res.result()).onComplete(ar -> {
+            if (ar.succeeded()) {
+              promise.complete(ar.result());
+            } else {
+              promise.fail(ar.cause());
+            }
+          });
+        } else {
+          promise.fail(res.cause());
+        }
+      });
+      return promise.future();
+    }
 
-		/**
-		 * {@inheritDoc}
-		 */
-	@Override public Future<Void> put(K k, V v, long ttl) {
-		Promise<Void> promise = Promise.promise();
-		encrypt_(v, res -> {
-			if (res.succeeded()) {
-				delegate_.put(k, res.result(), ttl).onComplete(ar -> {
-					if (ar.succeeded()) {
-						promise.complete(ar.result());
-					} else {
-						promise.fail(ar.cause());
-					}
-				});
-			} else {
-				promise.fail(res.cause());
-			}
-		});
-		return promise.future();
-	}
+    /**
+     * {@inheritDoc}
+     */
+    @Override public Future<Void> put(K k, V v, long ttl) {
+      Promise<Void> promise = Promise.promise();
+      encrypt_(v, res -> {
+        if (res.succeeded()) {
+          delegate_.put(k, res.result(), ttl).onComplete(ar -> {
+            if (ar.succeeded()) {
+              promise.complete(ar.result());
+            } else {
+              promise.fail(ar.cause());
+            }
+          });
+        } else {
+          promise.fail(res.cause());
+        }
+      });
+      return promise.future();
+    }
 
-		/**
-		 * {@inheritDoc}
-		 */
-	@Override public Future<V> putIfAbsent(K k, V v) {
-		Promise<V> promise = Promise.promise();
-		encrypt_(v, resEncrypt -> {
-			if (resEncrypt.succeeded()) {
-				delegate_.putIfAbsent(k, resEncrypt.result()).onComplete(ar -> {
-					if (ar.succeeded()) {
-						String entry = ar.result();
-						if (entry != null) {
-							decrypt_(entry, r -> {
-								if (r.succeeded()) {
-									promise.complete(r.result());
-								} else {
-									promise.fail(r.cause());
-								}
-							});
-						} else {
-							promise.complete(null);
-						}
-					} else {
-						promise.fail(ar.cause());
-					}
-				});
-			} else {
-				promise.fail(resEncrypt.cause());
-			}
-		});
-		return promise.future();
-	}
+    /**
+     * {@inheritDoc}
+     */
+    @Override public Future<V> putIfAbsent(K k, V v) {
+      Promise<V> promise = Promise.promise();
+      encrypt_(v, resEncrypt -> {
+        if (resEncrypt.succeeded()) {
+          delegate_.putIfAbsent(k, resEncrypt.result()).onComplete(ar -> {
+            if (ar.succeeded()) {
+              String entry = ar.result();
+              if (entry != null) {
+                decrypt_(entry, r -> {
+                  if (r.succeeded()) {
+                    promise.complete(r.result());
+                  } else {
+                    promise.fail(r.cause());
+                  }
+                });
+              } else {
+                promise.complete(null);
+              }
+            } else {
+              promise.fail(ar.cause());
+            }
+          });
+        } else {
+          promise.fail(resEncrypt.cause());
+        }
+      });
+      return promise.future();
+    }
 
-		/**
-		 * {@inheritDoc}
-		 */
-	@Override public Future<V> putIfAbsent(K k, V v, long ttl) {
-		Promise<V> promise = Promise.promise();
-		encrypt_(v, resEncrypt -> {
-			if (resEncrypt.succeeded()) {
-				delegate_.putIfAbsent(k, resEncrypt.result(), ttl).onComplete(ar -> {
-					if (ar.succeeded()) {
-						String entry = ar.result();
-						if (entry != null) {
-							decrypt_(entry, r -> {
-								if (r.succeeded()) {
-									promise.complete(r.result());
-								} else {
-									promise.fail(r.cause());
-								}
-							});
-						} else {
-							promise.complete(null);
-						}
-					} else {
-						promise.fail(ar.cause());
-					}
-				});
-			} else {
-				promise.fail(resEncrypt.cause());
-			}
-		});
-		return promise.future();
-	}
+    /**
+     * {@inheritDoc}
+     */
+    @Override public Future<V> putIfAbsent(K k, V v, long ttl) {
+      Promise<V> promise = Promise.promise();
+      encrypt_(v, resEncrypt -> {
+        if (resEncrypt.succeeded()) {
+          delegate_.putIfAbsent(k, resEncrypt.result(), ttl).onComplete(ar -> {
+            if (ar.succeeded()) {
+              String entry = ar.result();
+              if (entry != null) {
+                decrypt_(entry, r -> {
+                  if (r.succeeded()) {
+                    promise.complete(r.result());
+                  } else {
+                    promise.fail(r.cause());
+                  }
+                });
+              } else {
+                promise.complete(null);
+              }
+            } else {
+              promise.fail(ar.cause());
+            }
+          });
+        } else {
+          promise.fail(resEncrypt.cause());
+        }
+      });
+      return promise.future();
+    }
 
-		/**
-		 * {@inheritDoc}
-		 */
-	@Override public Future<V> remove(K k) {
-		Promise<V> promise = Promise.promise();
-		delegate_.remove(k).onComplete(ar -> {
-			if (ar.succeeded()) {
-				String entry = ar.result();
-				if (entry != null) {
-					decrypt_(entry, r -> {
-						if (r.succeeded()) {
-							promise.complete(r.result());
-						} else {
-							promise.fail(r.cause());
-						}
-					});
-				} else {
-					promise.complete(null);
-				}
-			} else {
-				promise.fail(ar.cause());
-			}
-		});
-		return promise.future();
-	}
+    /**
+     * {@inheritDoc}
+     */
+    @Override public Future<V> remove(K k) {
+      Promise<V> promise = Promise.promise();
+      delegate_.remove(k).onComplete(ar -> {
+        if (ar.succeeded()) {
+          String entry = ar.result();
+          if (entry != null) {
+            decrypt_(entry, r -> {
+              if (r.succeeded()) {
+                promise.complete(r.result());
+              } else {
+                promise.fail(r.cause());
+              }
+            });
+          } else {
+            promise.complete(null);
+          }
+        } else {
+          promise.fail(ar.cause());
+        }
+      });
+      return promise.future();
+    }
 
-		/**
-		 * {@inheritDoc}
-		 */
-	@Override public Future<Boolean> removeIfPresent(K k, V v) {
-		Promise<Boolean> promise = Promise.promise();
-		encrypt_(v, resEncrypt -> {
-			if (resEncrypt.succeeded()) {
-				delegate_.removeIfPresent(k, resEncrypt.result()).onComplete(ar -> {
-					if (ar.succeeded()) {
-						promise.complete(ar.result());
-					} else {
-						promise.fail(ar.cause());
-					}
-				});
-			} else {
-				promise.fail(resEncrypt.cause());
-			}
-		});
-		return promise.future();
-	}
+    /**
+     * {@inheritDoc}
+     */
+    @Override public Future<Boolean> removeIfPresent(K k, V v) {
+      Promise<Boolean> promise = Promise.promise();
+      encrypt_(v, resEncrypt -> {
+        if (resEncrypt.succeeded()) {
+          delegate_.removeIfPresent(k, resEncrypt.result()).onComplete(ar -> {
+            if (ar.succeeded()) {
+              promise.complete(ar.result());
+            } else {
+              promise.fail(ar.cause());
+            }
+          });
+        } else {
+          promise.fail(resEncrypt.cause());
+        }
+      });
+      return promise.future();
+    }
 
-		/**
-		 * {@inheritDoc}
-		 */
-	@Override public Future<V> replace(K k, V v) {
-		Promise<V> promise = Promise.promise();
-		encrypt_(v, resEncrypt -> {
-			if (resEncrypt.succeeded()) {
-				delegate_.replace(k, resEncrypt.result()).onComplete(ar -> {
-					if (ar.succeeded()) {
-						String entry = ar.result();
-						if (entry != null) {
-							decrypt_(entry, r -> {
-								if (r.succeeded()) {
-									promise.complete(r.result());
-								} else {
-									promise.fail(r.cause());
-								}
-							});
-						} else {
-							promise.complete(null);
-						}
-					} else {
-						promise.fail(ar.cause());
-					}
-				});
-			} else {
-				promise.fail(resEncrypt.cause());
-			}
-		});
-		return promise.future();
-	}
+    /**
+     * {@inheritDoc}
+     */
+    @Override public Future<V> replace(K k, V v) {
+      Promise<V> promise = Promise.promise();
+      encrypt_(v, resEncrypt -> {
+        if (resEncrypt.succeeded()) {
+          delegate_.replace(k, resEncrypt.result()).onComplete(ar -> {
+            if (ar.succeeded()) {
+              String entry = ar.result();
+              if (entry != null) {
+                decrypt_(entry, r -> {
+                  if (r.succeeded()) {
+                    promise.complete(r.result());
+                  } else {
+                    promise.fail(r.cause());
+                  }
+                });
+              } else {
+                promise.complete(null);
+              }
+            } else {
+              promise.fail(ar.cause());
+            }
+          });
+        } else {
+          promise.fail(resEncrypt.cause());
+        }
+      });
+      return promise.future();
+    }
 
-		/**
-		 * {@inheritDoc}
-		 */
-	@Override public Future<Boolean> replaceIfPresent(K k, V oldValue, V newValue) {
-		Promise<Boolean> promise = Promise.promise();
-		encrypt_(oldValue, resEncryptOld -> {
-			if (resEncryptOld.succeeded()) {
-				encrypt_(newValue, resEncryptNew -> {
-					if (resEncryptNew.succeeded()) {
-						delegate_.replaceIfPresent(k, resEncryptOld.result(), resEncryptNew.result()).onComplete(ar -> {
-							if (ar.succeeded()) {
-								promise.complete(ar.result());
-							} else {
-								promise.fail(ar.cause());
-							}
-						});
-					} else {
-						promise.fail(resEncryptNew.cause());
-					}
-				});
-			} else {
-				promise.fail(resEncryptOld.cause());
-			}
-		});
-		return promise.future();
-	}
+    /**
+     * {@inheritDoc}
+     */
+    @Override public Future<Boolean> replaceIfPresent(K k, V oldValue, V newValue) {
+      Promise<Boolean> promise = Promise.promise();
+      encrypt_(oldValue, resEncryptOld -> {
+        if (resEncryptOld.succeeded()) {
+          encrypt_(newValue, resEncryptNew -> {
+            if (resEncryptNew.succeeded()) {
+              delegate_.replaceIfPresent(k, resEncryptOld.result(), resEncryptNew.result()).onComplete(ar -> {
+                if (ar.succeeded()) {
+                  promise.complete(ar.result());
+                } else {
+                  promise.fail(ar.cause());
+                }
+              });
+            } else {
+              promise.fail(resEncryptNew.cause());
+            }
+          });
+        } else {
+          promise.fail(resEncryptOld.cause());
+        }
+      });
+      return promise.future();
+    }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override public Future<Void> clear() {
-		return delegate_.clear();
-	}
+  /**
+   * {@inheritDoc}
+   */
+    @Override public Future<Void> clear() {
+      return delegate_.clear();
+    }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override public Future<Integer> size() {
-		return delegate_.size();
-	}
+  /**
+   * {@inheritDoc}
+   */
+    @Override public Future<Integer> size() {
+      return delegate_.size();
+    }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override public Future<Set<K>> keys() {
-		return delegate_.keys();
-	}
+  /**
+   * {@inheritDoc}
+   */
+    @Override public Future<Set<K>> keys() {
+      return delegate_.keys();
+    }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override public Future<List<V>> values() {
-		Promise<List<V>> promise = Promise.promise();
-		delegate_.values(resValues -> {
-			if (resValues.succeeded()) {
-				List<String> values = resValues.result();
-				@SuppressWarnings("rawtypes") List<Future> futures = new ArrayList<>(values.size());
-				for (String value : values) {
-					Promise<V> decrPromise = Promise.promise();
-					decrypt_(value, r -> {
-						if (r.succeeded()) {
-							decrPromise.complete(r.result());
-						} else {
-							decrPromise.fail(r.cause());
-						}
-					});
-				futures.add(decrPromise.future());
-			}
-			@SuppressWarnings({"rawtypes", "unchecked"})
-			List<? extends Future<?>> typedFutures = (List<? extends Future<?>>) (List) futures;
-			Future.all(typedFutures).onComplete(ar -> {
-					if (ar.succeeded()) {
-						CompositeFuture composite = ar.result();
-						List<V> result = new ArrayList<>(composite.size());
-						for (int i = composite.size(); 0 < i--;) {
-							result.add(composite.resultAt(i));
-						}
-						promise.complete(result);
-					} else {
-						promise.fail(ar.cause());
-					}
-				});
-			} else {
-				promise.fail(resValues.cause());
-			}
-		});
-		return promise.future();
-	}
+  /**
+   * {@inheritDoc}
+   */
+    @Override public Future<List<V>> values() {
+      Promise<List<V>> promise = Promise.promise();
+      delegate_.values(resValues -> {
+        if (resValues.succeeded()) {
+          List<String> values = resValues.result();
+          @SuppressWarnings("rawtypes") List<Future> futures = new ArrayList<>(values.size());
+          for (String value : values) {
+            Promise<V> decrPromise = Promise.promise();
+            decrypt_(value, r -> {
+              if (r.succeeded()) {
+                decrPromise.complete(r.result());
+              } else {
+                decrPromise.fail(r.cause());
+              }
+            });
+            futures.add(decrPromise.future());
+          }
+          @SuppressWarnings({"rawtypes", "unchecked"})
+      List<? extends Future<?>> typedFutures = (List<? extends Future<?>>) (List) futures;
+          Future.all(typedFutures).onComplete(ar -> {
+            if (ar.succeeded()) {
+              CompositeFuture composite = ar.result();
+              List<V> result = new ArrayList<>(composite.size());
+              for (int i = composite.size(); 0 < i--;) {
+                result.add(composite.resultAt(i));
+              }
+              promise.complete(result);
+            } else {
+              promise.fail(ar.cause());
+            }
+          });
+        } else {
+          promise.fail(resValues.cause());
+        }
+      });
+      return promise.future();
+    }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override public Future<Map<K, V>> entries() {
-		Promise<Map<K, V>> promise = Promise.promise();
-		delegate_.entries(resEntries -> {
-			if (resEntries.succeeded()) {
-				Map<K, String> entries = resEntries.result();
-				List<K> keys = new ArrayList<>(entries.size());
-				for (K key : entries.keySet()) keys.add(key);
-				@SuppressWarnings("rawtypes") List<Future> futures = new ArrayList<>(keys.size());
-				for (K key : keys) {
-					Promise<V> decrPromise = Promise.promise();
-					decrypt_(entries.get(key), r -> {
-						if (r.succeeded()) {
-							decrPromise.complete(r.result());
-						} else {
-							decrPromise.fail(r.cause());
-						}
-					});
-				futures.add(decrPromise.future());
-			}
-			@SuppressWarnings({"rawtypes", "unchecked"})
-			List<? extends Future<?>> typedFutures = (List<? extends Future<?>>) (List) futures;
-			Future.all(typedFutures).onComplete(ar -> {
-					if (ar.succeeded()) {
-						CompositeFuture composite = ar.result();
-						Map<K, V> result = new HashMap<>(composite.size());
-						for (int i = composite.size(); 0 < i--;) {
-							result.put(keys.get(i), composite.resultAt(i));
-						}
-						promise.complete(result);
-					} else {
-						promise.fail(ar.cause());
-					}
-				});
-			} else {
-				promise.fail(resEntries.cause());
-			}
-		});
-		return promise.future();
-	}
+  /**
+   * {@inheritDoc}
+   */
+    @Override public Future<Map<K, V>> entries() {
+      Promise<Map<K, V>> promise = Promise.promise();
+      delegate_.entries(resEntries -> {
+        if (resEntries.succeeded()) {
+          Map<K, String> entries = resEntries.result();
+          List<K> keys = new ArrayList<>(entries.size());
+          for (K key : entries.keySet()) keys.add(key);
+          @SuppressWarnings("rawtypes") List<Future> futures = new ArrayList<>(keys.size());
+          for (K key : keys) {
+            Promise<V> decrPromise = Promise.promise();
+            decrypt_(entries.get(key), r -> {
+              if (r.succeeded()) {
+                decrPromise.complete(r.result());
+              } else {
+                decrPromise.fail(r.cause());
+              }
+            });
+            futures.add(decrPromise.future());
+          }
+          @SuppressWarnings({"rawtypes", "unchecked"})
+      List<? extends Future<?>> typedFutures = (List<? extends Future<?>>) (List) futures;
+          Future.all(typedFutures).onComplete(ar -> {
+            if (ar.succeeded()) {
+              CompositeFuture composite = ar.result();
+              Map<K, V> result = new HashMap<>(composite.size());
+              for (int i = composite.size(); 0 < i--;) {
+                result.put(keys.get(i), composite.resultAt(i));
+              }
+              promise.complete(result);
+            } else {
+              promise.fail(ar.cause());
+            }
+          });
+        } else {
+          promise.fail(resEntries.cause());
+        }
+      });
+      return promise.future();
+    }
 
-	}
+  }
 
 }
